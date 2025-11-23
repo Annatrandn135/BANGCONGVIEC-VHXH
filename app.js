@@ -112,6 +112,29 @@ function renderTable() {
     body.appendChild(tr);
   });
 }
+// 1) Đặt mảng tên (nếu chưa có)
+let cbccList = [
+  "Tú Anh","Nguyệt","Nhiên","Loan","L. Uyên","Hùng","Đào","Thúy","Ly","Hiền","Lưu",
+  "Thảo","Giang","Huy","Cường","Phong","Duy","Thân","Dung","T. Uyên","Văn","Trí","Phúc","Hân","Nguyên","Thành"
+];
+
+// 2) Hàm nạp option vào select
+function loadCBCCOptions() {
+  const sel = document.getElementById("filter-canbo");
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Lọc theo CBCC --</option>';
+  cbccList.forEach(n => {
+    const opt = document.createElement("option");
+    opt.value = n; opt.textContent = n;
+    sel.appendChild(opt);
+  });
+}
+
+// 3) Gọi ngay khi DOM sẵn sàng
+document.addEventListener("DOMContentLoaded", () => {
+  loadCBCCOptions();                 // <— thêm dòng này lên đầu
+  // ...giữ nguyên các lệnh sự kiện khác...
+});
 
 
 
