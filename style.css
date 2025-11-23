@@ -1,217 +1,129 @@
-/* ======================= Cơ bản ======================= */
-body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f5f7fa;
+/* ========== BIẾN MÀU ========== */
+:root{
+  --blue:#1565c0;      /* Lịch UBND */
+  --green:#2e7d32;     /* Lịch VH-XH */
+  --orange:#ef6c00;    /* Trọng tâm tháng */
+  --purple:#6a1b9a;    /* Nhiệm vụ CBCC */
+  --pink:#c2185b;      /* Báo cáo */
+  --ink:#1f2937;       /* chữ chính */
+  --muted:#6b7280;     /* chữ mờ */
+  --bg:#f5f7fa;        /* nền trang */
+  --card:#ffffff;      /* nền bảng/khối */
+  --line:#e5e7eb;      /* đường kẻ */
 }
 
-header {
-  background: #0A5DBD;
-  color: #fff;
-  padding: 12px 16px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+/* ========== CƠ BẢN ========== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; padding:0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--ink); background:var(--bg);
 }
 
-h1 {
-  margin: 0;
-  font-size: 24px;
-  letter-spacing: 0.5px;
-  font-weight: 600;
+/* ========== HEADER & TIÊU ĐỀ ========== */
+header{
+  padding:18px 20px;
+  background:linear-gradient(135deg,#0a5dbd 0%, #0f7ae5 60%, #2aa9ff 100%);
+  color:#fff; box-shadow:0 6px 16px rgba(0,0,0,.15);
+}
+h1{
+  margin:0 0 10px 0;
+  font-size:28px; font-weight:800; letter-spacing:.5px;
+  text-shadow:0 2px 0 rgba(0,0,0,.12);
+  display:inline-block;
+  position:relative;
+}
+h1::after{
+  content:""; display:block; height:4px; width:60%;
+  background:linear-gradient(90deg,#ffd54f,#ffca28,#ffc107);
+  border-radius:2px; margin-top:6px;
 }
 
-/* ======================= Tabs ======================= */
-#tabs {
-  margin-top: 12px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+/* ========== TABS ========== */
+#tabs{display:flex; gap:8px; flex-wrap:wrap}
+#tabs button{
+  appearance:none; cursor:pointer;
+  border:1px solid var(--line);
+  background:#eef2f7; color:var(--ink);
+  padding:8px 14px; border-radius:8px; font-size:14px;
+  transition:.2s ease;
 }
+#tabs button:hover{filter:brightness(.96)}
+#tabs button.active{color:#fff; border-color:transparent}
 
-#tabs button {
-  background: #e6e6e6;
-  border: 1px solid #ccc;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
+/* màu riêng cho từng tab khi ACTIVE */
+#tabs button[data-tab="lich_ubnd"].active{background:var(--blue)}
+#tabs button[data-tab="lich_vhxh"].active{background:var(--green)}
+#tabs button[data-tab="trong_tam_thang"].active{background:var(--orange)}
+#tabs button[data-tab="nhiem_vu_cbcc"].active{background:var(--purple)}
+#tabs button[data-tab="bao_cao"].active{background:var(--pink)}
 
-#tabs button.active {
-  background: #ffc107;
-  border-color: #e0a800;
-  font-weight: 600;
-}
+/* viền nhạt theo màu khi KHÔNG active để tạo nhận diện */
+#tabs button[data-tab="lich_ubnd"]{border-color:color-mix(in srgb,var(--blue) 30%,#fff)}
+#tabs button[data-tab="lich_vhxh"]{border-color:color-mix(in srgb,var(--green) 30%,#fff)}
+#tabs button[data-tab="trong_tam_thang"]{border-color:color-mix(in srgb,var(--orange) 30%,#fff)}
+#tabs button[data-tab="nhiem_vu_cbcc"]{border-color:color-mix(in srgb,var(--purple) 30%,#fff)}
+#tabs button[data-tab="bao_cao"]{border-color:color-mix(in srgb,var(--pink) 30%,#fff)}
 
-/* ======================= Toolbar ======================= */
-main {
-  padding: 16px;
-}
-
-.toolbar {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.toolbar select,
+/* ========== THANH CÔNG CỤ ========== */
+main{padding:16px}
+.toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
 .toolbar input[type="search"],
-.toolbar button {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  background: #fff;
+.toolbar select,.toolbar button{
+  background:#fff; border:1px solid var(--line);
+  border-radius:8px; padding:9px 12px; font-size:14px
 }
+#btn-add{background:#22c55e; color:#fff; border-color:#16a34a; font-weight:600}
+#btn-add:hover{filter:brightness(.95)}
 
-#btn-add {
-  background: #28a745;
-  color: #fff;
-  border-color: #1f8b38;
-  font-weight: 600;
+/* ========== BẢNG ========== */
+table{width:100%; border-collapse:collapse; background:var(--card); border-radius:10px; overflow:hidden}
+thead th{
+  text-align:left; font-size:13px; color:#fff; padding:10px;
+  background:#0a5dbd; /* màu mặc định; sẽ đổi theo tab hiện thời */
 }
+tbody td{padding:9px 10px; border-bottom:1px solid var(--line); font-size:14px}
+tbody tr:hover{background:#f0f7ff}
 
-/* ======================= Bảng ======================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff;
-  border-radius: 6px;
-  overflow: hidden;
+/* dải màu header theo tab đang mở (thêm class trên body bằng JS nếu muốn),
+   hoặc đơn giản dùng gradient xanh mặc định như trên */
+
+/* ========== BADGE TRẠNG THÁI ========== */
+.badge{padding:4px 8px; border-radius:6px; font-size:12px; color:#fff; font-weight:600}
+.status-Cho{background:#6b7280}
+.status-Dang{background:#0ea5e9}
+.status-Hoan{background:#22c55e}
+.status-Qua{background:#ef4444}
+
+/* ========== LINK ========== */
+a.link{color:#0a5dbd; text-decoration:none; font-weight:600}
+a.link:hover{text-decoration:underline}
+
+/* ========== DIALOG FORM ========== */
+dialog{
+  border:none; border-radius:12px; padding:18px; width:520px; max-width:95%;
+  box-shadow:0 12px 32px rgba(0,0,0,.25); background:#fff
 }
-
-thead th {
-  background: #0A5DBD;
-  color: #fff;
-  padding: 10px;
-  text-align: left;
-  font-size: 14px;
+#dlg-title{margin:0 0 10px 0; font-size:20px; font-weight:700}
+#form-fields .row{margin:10px 0}
+#form-fields label{display:block; font-size:13px; color:var(--muted); margin-bottom:4px}
+#form-fields input,#form-fields select,#form-fields textarea{
+  width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff
 }
+.file-row{display:flex; gap:8px; align-items:center}
+dialog menu{display:flex; justify-content:flex-end; gap:10px; margin-top:12px}
+dialog button{padding:9px 14px; border-radius:8px; border:1px solid var(--line); font-size:14px}
+#dlg-save{background:#0a5dbd; color:#fff; border-color:#0a5dbd}
+#dlg-cancel{background:#eef2f7}
 
-tbody td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-}
+/* ========== THÔNG BÁO ========== */
+.error{color:#ef4444; margin:10px 0}
+.muted{color:var(--muted); font-style:italic}
 
-tbody tr:hover {
-  background: #f1f7ff;
-}
-
-/* ======================= Badge trạng thái ======================= */
-.badge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  color: #fff;
-  font-weight: 500;
-}
-
-.status-Cho  { background: #6c757d; }
-.status-Dang { background: #007bff; }
-.status-Hoan { background: #28a745; }
-.status-Qua  { background: #dc3545; }
-
-/* ======================= Link ======================= */
-a.link {
-  color: #0A5DBD;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-a.link:hover {
-  text-decoration: underline;
-}
-
-/* ======================= Dialog ======================= */
-dialog {
-  border: none;
-  border-radius: 8px;
-  padding: 20px;
-  width: 450px;
-  max-width: 90%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-#dlg-title {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-#form-fields .row {
-  margin-bottom: 12px;
-}
-
-#form-fields label {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 4px;
-  font-weight: 600;
-}
-
-#form-fields input,
-#form-fields textarea,
-#form-fields select {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  background: #fff;
-}
-
-.file-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-dialog menu {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-dialog button {
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-#dlg-save {
-  background: #007bff;
-  border-color: #0069d9;
-  color: #fff;
-}
-
-#dlg-cancel {
-  background: #e6e6e6;
-}
-
-/* ======================= Thông báo ======================= */
-.error {
-  color: #dc3545;
-  margin: 10px 0;
-}
-
-.muted {
-  color: #6c757d;
-  font-style: italic;
-}
-
-/* ======================= Mobile responsive ======================= */
-@media (max-width: 600px) {
-  #tabs button {
-    flex: 1 1 100%;
-  }
-
-  dialog {
-    width: 95%;
-  }
+/* ========== MOBILE ========== */
+@media (max-width:720px){
+  #tabs{gap:6px}
+  #tabs button{flex:1 1 100%}
+  dialog{width:95%}
 }
