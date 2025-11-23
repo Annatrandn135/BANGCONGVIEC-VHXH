@@ -127,3 +127,11 @@ dialog button{padding:9px 14px; border-radius:8px; border:1px solid var(--line);
   #tabs button{flex:1 1 100%}
   dialog{width:95%}
 }
+/* ===== Màu nhãn trạng thái ===== */
+.badge{padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;font-weight:700}
+.badge--cho{background:#6b7280}        /* Chưa thực hiện: xám */
+.badge--dang{background:#0ea5e9}       /* Đang thực hiện: xanh dương nhạt */
+.badge--hoan{background:#22c55e}       /* Hoàn thành: xanh lá */
+.badge--qua{background:#ef4444}        /* Quá hạn: đỏ */
+.badge--tamdung{background:#f59e0b}    /* Tạm dừng: cam (nếu có) */
+
