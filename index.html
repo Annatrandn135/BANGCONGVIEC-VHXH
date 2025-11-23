@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bảng công việc phòng VH-XH</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
   <header>
     <h1>BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
     <nav id="tabs">
-      <button data-tab="lich_ubnd">1. Lịch công tác UBND phường</button>
+      <button data-tab="lich_ubnd" class="active">1. Lịch công tác UBND phường</button>
       <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
       <button data-tab="trong_tam_thang">3. Nhiệm vụ trọng tâm tháng</button>
       <button data-tab="nhiem_vu_cbcc">4. Nhiệm vụ từng CBCC</button>
@@ -19,20 +19,51 @@
   </header>
 
   <main>
+    <!-- Thanh công cụ -->
     <section class="toolbar">
       <button id="btn-add">Thêm mới</button>
       <input id="search" type="search" placeholder="Tìm kiếm...">
-      <select id="filter-canbo"><option value="">-- Lọc theo CBCC --</option></select>
+      <select id="filter-canbo">
+        <option value="">-- Lọc theo CBCC --</option>
+      </select>
       <select id="filter-status">
         <option value="">-- Trạng thái --</option>
         <option value="Chưa thực hiện">Chưa thực hiện</option>
         <option value="Đang thực hiện">Đang thực hiện</option>
         <option value="Hoàn thành">Hoàn thành</option>
         <option value="Quá hạn">Quá hạn</option>
-   8"></script>
-</body>
+      </select>
+    </section>
 
+    <!-- Thông báo lỗi / trống -->
+    <div id="error" class="error"></div>
+    <div id="empty" class="muted"></div>
+
+    <!-- Bảng dữ liệu -->
+    <table>
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </main>
+
+  <!-- Hộp thoại thêm/sửa -->
+  <dialog id="dlg">
+    <form method="dialog">
+      <h3 id="dlg-title">Biểu mẫu</h3>
+      <div id="form-fields"></div>
+      <menu>
+        <button id="dlg-cancel" type="button">Hủy</button>
+        <button id="dlg-save" type="button">Lưu</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- JS: đặt defer để chắc chắn DOM sẵn sàng -->
+  <script src="app.js?v=12" defer></script>
+</body>
 </html>
+
+
 
 
 
