@@ -1,5 +1,19 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bảng công việc phòng VH-XH</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css?v=1003">
+</head>
+
+<body>
+
 <header>
   <h1>BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
+
   <nav id="tabs">
     <button data-tab="lich_ubnd" class="active">1. Lịch công tác UBND phường</button>
     <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
@@ -10,10 +24,17 @@
 </header>
 
 <main>
+
+  <!-- Toolbar -->
   <section class="toolbar">
     <button id="btn-add">Thêm mới</button>
+
     <input id="search" type="search" placeholder="Tìm kiếm..." />
-    <select id="filter-canbo"><option value="">-- Lọc theo CBCC --</option></select>
+
+    <select id="filter-canbo">
+      <option value="">-- Lọc theo CBCC --</option>
+    </select>
+
     <select id="filter-status">
       <option value="">-- Trạng thái --</option>
       <option value="Chưa thực hiện">Chưa thực hiện</option>
@@ -26,16 +47,21 @@
   <div id="error" class="error"></div>
   <div id="empty" class="muted"></div>
 
+  <!-- BẢNG HIỂN THỊ -->
   <table>
     <thead id="table-head"></thead>
     <tbody id="table-body"></tbody>
   </table>
+
 </main>
 
+<!-- DIALOG THÊM/SỬA -->
 <dialog id="dlg">
   <form method="dialog">
     <h3 id="dlg-title">Biểu mẫu</h3>
+
     <div id="form-fields"></div>
+
     <menu>
       <button id="dlg-cancel" type="button">Hủy</button>
       <button id="dlg-save" type="button">Lưu</button>
@@ -43,7 +69,11 @@
   </form>
 </dialog>
 
-<script src="app.js?v=17" defer></script>
+<!-- JS -->
+<script src="app.js?v=1003" defer></script>
+
+</body>
+</html>
 
 
 
