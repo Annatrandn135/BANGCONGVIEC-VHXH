@@ -42,13 +42,16 @@ function formatStatus(val) {
   if (v.includes("quá")) return '<span class="badge status-Qua">Quá hạn</span>';
   return '<span class="badge status-Cho">Chưa thực hiện</span>';
 }
-function formatDateForView(val) {
+function formatStatus(val) {
   if (!val) return "";
-  try {
-    const d = new Date(val);
-    if (isNaN(d.getTime())) return String(val);
-    return d.toLocaleDateString('vi-VN');
-  } catch(e){ return String(val); }
+  const v = String(val)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // bỏ dấu
+    .toLowerCase().trim();
+  if (v.includes("hoan") || v.includes("xong")) return '<span class="badge badge--hoan">Hoàn thành</span>';
+  if (v.includes("dang") || v.includes("thuc hien")) return '<span class="badge badge--dang">Đang thực hiện</span>';
+  if (v.includes("qua han") || v.includes("tre han")) return '<span class="badge badge--qua">Quá hạn</span>';
+  if (v.includes("tam dung")) return '<span class="badge badge--tamdung">Tạm dừng</span>';
+  return '<span class="badge badge--cho">Chưa thực hiện</span>';
 }
 
 /* ====================== TRẠNG THÁI TOÀN CỤC ====================== */
@@ -273,6 +276,7 @@ async function del(rec){
   if (!data.success){ alert("Lỗi: "+data.message); return; }
   loadData();
 }
+
 
 
 
