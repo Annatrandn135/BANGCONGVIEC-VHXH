@@ -1,4 +1,4 @@
-const GAS_BASE_URL = "https://script.google.com/macros/s/REPLACE_WITH_DEPLOYMENT_ID/exec";
+const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbwE0xwDSwrn2KSKZ1IKOutfjsJ9M95OGpsynd7xpv0xSZFhYQnlDA_gTraxgI_rglugVA/exec";
 
 const SHEETS = {
   lich_ubnd: {
@@ -52,5 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
   cbccList.forEach(n => { const opt = document.createElement("option"); opt.value = n; opt.textContent = n; f.appendChild(opt); });
   switchTab(currentTab);
 });
+
 
 function switchTab(tab) {
