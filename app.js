@@ -52,8 +52,66 @@ document.addEventListener("DOMContentLoaded", () => {
   cbccList.forEach(n => { const opt = document.createElement("option"); opt.value = n; opt.textContent = n; f.appendChild(opt); });
   switchTab(currentTab);
 });
-
-
 function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  loadData();
+}
+
+async function loadData() {
+  const meta = SHEETS[currentTab];
+  document.getElementById("table-head").innerHTML = "<tr>" + meta.columns.map(c=>`<th>${c}</th>`).join("") + "<th>Thao tác</th></tr>";
+  document.getElementById("table-body").innerHTML = "";
+  document.getElementById("error").textContent = "";
+  document.getElementById("empty").textContent = "";
+
+  try {
+    const url = new URL(GAS_BASE_URL);
+    url.searchParams.set("action","list");
+    url.searchParams.set("sheet", meta.sheetName);
+    const res = await fetch(url, {method: "GET"});
+    const data = await res.json();
+    cache[currentTab] = data.records || [];
+    renderTable();
+  } catch (e) {
+    document.getElementById("error").textContent = "Không tải được dữ liệu. Kiểm tra quyền truy cập Web App.";
+  }
+}
+
+function renderTable() {
+  const meta = SHEETS[currentTab];
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const canbo = document.getElementById("filter-canbo").value;
+  const st = document.getElementById("filter-status").value;
+  let rows = (cache[currentTab] || []).filter(r => {
+    const text = Object.values(r).join(" ").toLowerCase();
+    const okQ = !q || text.includes(q);
+    const okCanbo = !canbo || (r["Cán bộ"] === canbo || r["Phụ trách"] === canbo);
+    const okSt = !st || (r["Trạng thái"] === st);
+    return okQ && okCanbo && okSt;
+  });
+  const body = document.getElementById("table-body");
+  body.innerHTML = "";
+  if (!rows.length) { document.getElementById("empty").textContent = "Chưa có dữ liệu."; return; }
+  document.getElementById("empty").textContent = "";
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    meta.columns.forEach(col => {
+      let val = r[col] || "";
+      if (col.toLowerCase().includes("trạng thái")) val = formatStatus(val);
+      if (col.toLowerCase().includes("liên") || col.toLowerCase().includes("tệp") || col.toLowerCase().includes("kết quả") || col.toLowerCase().includes("nguồn")) {
+        if (val) val = `<a class="link" href="${val}" target="_blank">Mở liên kết</a>`;
+      }
+      tr.insertAdjacentHTML("beforeend", `<td>${val}</td>`);
+    });
+    const ops = document.createElement("td");
+    ops.innerHTML = `<button data-op="edit">Sửa</button> <button data-op="del">Xóa</button>`;
+    ops.querySelector('[data-op="edit"]').addEventListener("click", ()=> openEdit(r));
+    ops.querySelector('[data-op="del"]').addEventListener("click", ()=> del(r));
+    tr.appendChild(ops);
+    body.appendChild(tr);
+  });
+}
+
 
 
