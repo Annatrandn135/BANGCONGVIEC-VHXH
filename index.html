@@ -4,86 +4,66 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bảng công việc phòng VH-XH</title>
-
-  <!-- CSS -->
-  <link rel="stylesheet" href="style.css?v=1005">
+  <link rel="stylesheet" href="style.css?v=20251124a">
 </head>
-
 <body>
+  <header class="site-header">
+    <h1><span>📋</span> BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
+    <div class="underline"></div>
+    <nav id="tabs" class="tabs">
+      <button data-tab="lich_ubnd"   class="tab tab--blue">1. Lịch công tác UBND phường</button>
+      <button data-tab="lich_vhxh"   class="tab tab--teal">2. Lịch công tác phòng VH-XH</button>
+      <button data-tab="trong_tam_thang" class="tab tab--amber">3. Nhiệm vụ trọng tâm tháng</button>
+      <button data-tab="nhiem_vu_cbcc"   class="tab tab--purple">4. Nhiệm vụ từng CBCC</button>
+      <button data-tab="bao_cao"     class="tab tab--rose">5. Báo cáo tuần/tháng/quý</button>
+    </nav>
+  </header>
 
-<header>
-  <h1>BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
+  <main>
+    <section class="toolbar">
+      <button id="btn-add" class="btn btn--primary">Thêm mới</button>
+      <input id="search" type="search" placeholder="Tìm kiếm...">
+      <select id="filter-canbo" title="Lọc theo CBCC">
+        <option value="">-- Lọc theo CBCC --</option>
+      </select>
+      <select id="filter-status" title="Lọc theo trạng thái">
+        <option value="">-- Trạng thái --</option>
+        <option>Chưa thực hiện</option>
+        <option>Đang thực hiện</option>
+        <option>Hoàn thành</option>
+        <option>Quá hạn</option>
+        <option>Tạm dừng</option>
+      </select>
+    </section>
 
-  <nav id="tabs">
-    <button data-tab="lich_ubnd" class="active">1. Lịch công tác UBND phường</button>
-    <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
-    <button data-tab="trong_tam_thang">3. Nhiệm vụ trọng tâm tháng</button>
-    <button data-tab="nhiem_vu_cbcc">4. Nhiệm vụ từng CBCC</button>
-    <button data-tab="bao_cao">5. Báo cáo tuần/tháng/quý</button>
-  </nav>
-</header>
+    <div id="error" class="alert alert--error" hidden></div>
+    <div class="table-wrap">
+      <table class="grid">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      <div id="empty" class="empty"></div>
+    </div>
+  </main>
 
-<main>
+  <!-- Dialog thêm/sửa -->
+  <dialog id="dlg">
+    <form method="dialog" class="dialog">
+      <div class="dialog__header">
+        <h3 id="dlg-title">Biểu mẫu</h3>
+      </div>
+      <div id="form-fields" class="dialog__body"></div>
+      <div class="dialog__footer">
+        <button id="dlg-cancel" type="button" class="btn">Hủy</button>
+        <button id="dlg-save"   type="button" class="btn btn--primary">Lưu</button>
+      </div>
+    </form>
+  </dialog>
 
-  <!-- Toolbar -->
-  <section class="toolbar">
-    <button id="btn-add">Thêm mới</button>
+  <footer class="footer">
+    Triển khai nội bộ: Google Sheets + Apps Script + GitHub Pages
+  </footer>
 
-    <input id="search" type="search" placeholder="Tìm kiếm..." />
-
-    <select id="filter-canbo">
-      <option value="">-- Lọc theo CBCC --</option>
-    </select>
-
-    <select id="filter-status">
-      <option value="">-- Trạng thái --</option>
-      <option value="Chưa thực hiện">Chưa thực hiện</option>
-      <option value="Đang thực hiện">Đang thực hiện</option>
-      <option value="Hoàn thành">Hoàn thành</option>
-      <option value="Quá hạn">Quá hạn</option>
-    </select>
-  </section>
-
-  <div id="error" class="error"></div>
-  <div id="empty" class="muted"></div>
-
-  <!-- BẢNG HIỂN THỊ -->
-  <table>
-    <thead id="table-head"></thead>
-    <tbody id="table-body"></tbody>
-  </table>
-
-</main>
-
-<!-- DIALOG THÊM/SỬA -->
-<dialog id="dlg">
-  <form method="dialog">
-    <h3 id="dlg-title">Biểu mẫu</h3>
-
-    <div id="form-fields"></div>
-
-    <menu>
-      <button id="dlg-cancel" type="button">Hủy</button>
-      <button id="dlg-save" type="button">Lưu</button>
-    </menu>
-  </form>
-</dialog>
-
-<!-- JS -->
-<script src="app.js?v=1003" defer></script>
-
+  <script src="app.js?v=20251124a"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
