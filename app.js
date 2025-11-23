@@ -2,7 +2,7 @@
  * FRONTEND – Bảng công việc phòng VH-XH
  * LƯU Ý: Thay GAS_BASE_URL bằng URL Web App (đuôi /exec)
  */
-const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbyBNm3HbgZKabYWPFRcqTWvwMIstMR_GYr8JD1Bac73Ffjfr4kRGopsBcDJRJ_juNB3/exec";   // <-- THAY BẰNG URL CỦA BẠN
+const GAS_BASE_URL = "YOUR_WEB_APP_URL_HERE";   // <-- THAY BẰNG URL CỦA BẠN
 
 /* ====================== CẤU HÌNH SHEET ====================== */
 const SHEETS = {
@@ -42,7 +42,6 @@ function formatStatus(val) {
   if (v.includes("quá")) return '<span class="badge status-Qua">Quá hạn</span>';
   return '<span class="badge status-Cho">Chưa thực hiện</span>';
 }
-
 function formatDateForView(val) {
   if (!val) return "";
   try {
@@ -76,7 +75,6 @@ async function loadCBCCFromSheetIfAny() {
   } catch(e){}
   loadCBCCOptions();
 }
-
 function loadCBCCOptions() {
   const sel = document.getElementById("filter-canbo");
   if (!sel) return;
@@ -90,21 +88,16 @@ function loadCBCCOptions() {
 
 /* ====================== KHỞI TẠO ====================== */
 document.addEventListener("DOMContentLoaded", async ()=>{
-
   await loadCBCCFromSheetIfAny();
-
   document.querySelectorAll("#tabs button").forEach(btn=>{
     btn.addEventListener("click", ()=> switchTab(btn.dataset.tab));
   });
-
   document.getElementById("btn-add").addEventListener("click", openCreate);
   document.getElementById("search").addEventListener("input", renderTable);
   document.getElementById("filter-canbo").addEventListener("change", renderTable);
   document.getElementById("filter-status").addEventListener("change", renderTable);
-
   switchTab(currentTab);
 });
-
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll("#tabs button").forEach(b =>
@@ -116,27 +109,21 @@ function switchTab(tab) {
 /* ====================== TẢI DỮ LIỆU ====================== */
 async function loadData(){
   const meta = SHEETS[currentTab];
-
   document.getElementById("table-head").innerHTML =
     "<tr>" + meta.columns.map(c=>`<th>${c}</th>`).join("") + "<th>Thao tác</th></tr>";
-
   document.getElementById("table-body").innerHTML = "";
   document.getElementById("error").textContent = "";
   document.getElementById("empty").textContent = "";
-
   try {
     const url = new URL(GAS_BASE_URL);
     url.searchParams.set("action","list");
     url.searchParams.set("sheet",meta.sheetName);
-
     const res = await fetch(url);
     const data = await res.json();
     cache[currentTab] = Array.isArray(data.records) ? data.records : [];
     renderTable();
-
   } catch(e){
-    document.getElementById("error").textContent =
-      "Không tải được dữ liệu: " + (e.message || e);
+    document.getElementById("error").textContent = "Không tải được dữ liệu: " + (e.message || e);
   }
 }
 
@@ -146,7 +133,6 @@ function renderTable(){
   const q = document.getElementById("search").value.trim().toLowerCase();
   const canbo = document.getElementById("filter-canbo").value;
   const st = document.getElementById("filter-status").value;
-
   let rows = (cache[currentTab]||[]).filter(r=>{
     const text = Object.values(r).join(" ").toLowerCase();
     const okQ = !q || text.includes(q);
@@ -154,15 +140,12 @@ function renderTable(){
     const okT = !st || r["Trạng thái"]===st;
     return okQ && okCB && okT;
   });
-
   const body = document.getElementById("table-body");
   body.innerHTML = "";
-
   if (!rows.length){
     document.getElementById("empty").textContent = "Chưa có dữ liệu.";
     return;
   }
-
   rows.forEach(r=>{
     const tr = document.createElement("tr");
     meta.columns.forEach(col=>{
@@ -174,12 +157,8 @@ function renderTable(){
       }
       tr.insertAdjacentHTML("beforeend",`<td>${val}</td>`);
     });
-
     const ops = document.createElement("td");
-    ops.innerHTML = `
-      <button data-op="edit">Sửa</button>
-      <button data-op="del">Xóa</button>
-    `;
+    ops.innerHTML = `<button data-op="edit">Sửa</button><button data-op="del">Xóa</button>`;
     ops.querySelector('[data-op="edit"]').onclick = ()=>openEdit(r);
     ops.querySelector('[data-op="del"]').onclick = ()=>del(r);
     tr.appendChild(ops);
@@ -192,10 +171,8 @@ async function uploadFileViaGAS(file){
   const fd = new FormData();
   fd.append("action","upload");
   fd.append("file",file,file.name);
-
   const res = await fetch(GAS_BASE_URL,{ method:"POST", body:fd });
   const data = await res.json();
-
   if (!data.success) throw new Error(data.message || "Upload lỗi");
   return data.url;
 }
@@ -205,76 +182,48 @@ function buildFields(record={}){
   const meta = SHEETS[currentTab];
   const fields = document.getElementById("form-fields");
   fields.innerHTML = "";
-
   meta.columns.forEach(col=>{
     if (col==="ID" || col==="Cập nhật" || col==="Ngày cập nhật") return;
-
     const id = "fld-"+col.replace(/\s+/g,"_");
     const val = record[col] || "";
-
     const isDate = /(Ngày|Hạn|Tháng)/i.test(col);
     const isLong = /(Nội dung|Ghi chú|Công việc|Tiêu đề)/i.test(col);
     const isCanBo = ["Cán bộ","Phụ trách","Người giao","Người nhập"].includes(col);
     const isLink = /(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col);
-
     let input;
-
     if (isLong){
       input = `<textarea id="${id}" rows="3">${val}</textarea>`;
-    }
-    else if (isDate){
+    } else if (isDate){
       input = `<input id="${id}" type="date" value="${val}">`;
-    }
-    else if (isCanBo){
-      input = `<select id="${id}">
-        ${["",...cbccList].map(v=>`<option ${v===val?"selected":""}>${v}</option>`).join("")}
-      </select>`;
-    }
-    else if (isLink){
+    } else if (isCanBo){
+      input = `<select id="${id}">${["",...cbccList].map(v=>`<option ${v===val?"selected":""}>${v}</option>`).join("")}</select>`;
+    } else if (isLink){
       input = `
         <div class="file-row">
           <input type="url" id="${id}" value="${val}" placeholder="https://...">
-          <input type="file" id="${id}_file">
+          <input type="file" id="${id}_file" accept=".pdf,.doc,.docx,.xls,.xlsx">
           <button type="button" id="${id}_btn">Tải lên</button>
         </div>`;
-    }
-    else {
+    } else {
       input = `<input id="${id}" type="text" value="${val}">`;
     }
-
-    fields.insertAdjacentHTML("beforeend",`
-      <div class="row">
-        <label>${col}</label>
-        ${input}
-      </div>
-    `);
-
+    fields.insertAdjacentHTML("beforeend",`<div class="row"><label>${col}</label>${input}</div>`);
     if (isLink){
       const btn = document.getElementById(`${id}_btn`);
       const file = document.getElementById(`${id}_file`);
       const urlBox = document.getElementById(id);
-
       btn.onclick = async ()=>{
-        if (!file.files || !file.files[0]){
-          alert("Chọn tệp trước.");
-          return;
-        }
-        btn.disabled = true;
-        btn.textContent = "Đang tải...";
+        if (!file.files || !file.files[0]){ alert("Chọn tệp trước."); return; }
+        btn.disabled = true; btn.textContent = "Đang tải...";
         try{
           const url = await uploadFileViaGAS(file.files[0]);
-          urlBox.value = url;
-          alert("Đã tải lên xong!");
-        } catch(e){
-          alert("Upload lỗi: "+e.message);
-        }
-        btn.disabled = false;
-        btn.textContent = "Tải lên";
+          urlBox.value = url; alert("Đã tải lên xong!");
+        } catch(e){ alert("Upload lỗi: "+e.message); }
+        btn.disabled = false; btn.textContent = "Tải lên";
       };
     }
   });
 }
-
 function openCreate(){
   document.getElementById("dlg-title").textContent = "Thêm mới";
   buildFields();
@@ -283,7 +232,6 @@ function openCreate(){
   document.getElementById("dlg-save").onclick = saveCreate;
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
-
 function openEdit(rec){
   document.getElementById("dlg-title").textContent = "Cập nhật";
   buildFields(rec);
@@ -292,55 +240,37 @@ function openEdit(rec){
   document.getElementById("dlg-save").onclick = ()=>saveUpdate(rec.ID);
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
-
 async function saveCreate(){ await saveRecord("create"); }
 async function saveUpdate(id){ await saveRecord("update",id); }
-
 async function saveRecord(action,id=null){
   const meta = SHEETS[currentTab];
   const payload = { action, sheet:meta.sheetName, data:{} };
   if (id) payload.id = id;
-
   meta.columns.forEach(col=>{
     if (col==="ID"||col==="Cập nhật"||col==="Ngày cập nhật") return;
     const el = document.getElementById("fld-"+col.replace(/\s+/g,"_"));
     if (el) payload.data[col] = el.value || "";
   });
-
   const res = await fetch(GAS_BASE_URL,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify(payload)
   });
-
   const data = await res.json();
-  if (!data.success){
-    alert("Lỗi: "+data.message);
-    return;
-  }
+  if (!data.success){ alert("Lỗi: "+data.message); return; }
   document.getElementById("dlg").close();
   loadData();
 }
-
 async function del(rec){
   if (!confirm("Xóa bản ghi này?")) return;
-
   const meta = SHEETS[currentTab];
   const res = await fetch(GAS_BASE_URL,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"delete",
-      sheet:meta.sheetName,
-      id:rec.ID
-    })
+    body:JSON.stringify({ action:"delete", sheet:meta.sheetName, id:rec.ID })
   });
-
   const data = await res.json();
-  if (!data.success){
-    alert("Lỗi: "+data.message);
-    return;
-  }
+  if (!data.success){ alert("Lỗi: "+data.message); return; }
   loadData();
 }
 
