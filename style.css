@@ -1,137 +1,93 @@
-/* ========== BIẾN MÀU ========== */
 :root{
-  --blue:#1565c0;      /* Lịch UBND */
-  --green:#2e7d32;     /* Lịch VH-XH */
-  --orange:#ef6c00;    /* Trọng tâm tháng */
-  --purple:#6a1b9a;    /* Nhiệm vụ CBCC */
-  --pink:#c2185b;      /* Báo cáo */
-  --ink:#1f2937;       /* chữ chính */
-  --muted:#6b7280;     /* chữ mờ */
-  --bg:#f5f7fa;        /* nền trang */
-  --card:#ffffff;      /* nền bảng/khối */
-  --line:#e5e7eb;      /* đường kẻ */
+  --bg: #0b1220;
+  --panel:#0f172a;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --line:#1e293b;
+  --primary:#2563eb;
+  --blue:#1d4ed8;
+  --teal:#0d9488;
+  --amber:#d97706;
+  --purple:#7c3aed;
+  --rose:#e11d48;
+  --green:#22c55e;
+  --sky:#0ea5e9;
+  --red:#ef4444;
+  --gray:#6b7280;
+  --orange:#f59e0b;
 }
-
-/* ========== CƠ BẢN ========== */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0; padding:0;
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  color:var(--ink); background:var(--bg);
+  margin:0;background:#0a0f18;color:var(--text);
+  font:14px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
 
-/* ========== HEADER & TIÊU ĐỀ ========== */
-header{
-  padding:18px 20px;
-  background:linear-gradient(135deg,#0a5dbd 0%, #0f7ae5 60%, #2aa9ff 100%);
-  color:#fff; box-shadow:0 6px 16px rgba(0,0,0,.15);
-}
-h1{
-  margin:0 0 10px 0;
-  font-size:28px; font-weight:800; letter-spacing:.5px;
-  text-shadow:0 2px 0 rgba(0,0,0,.12);
-  display:inline-block;
-  position:relative;
-}
-h1::after{
-  content:""; display:block; height:4px; width:60%;
-  background:linear-gradient(90deg,#ffd54f,#ffca28,#ffc107);
-  border-radius:2px; margin-top:6px;
-}
+/* Header */
+.site-header{padding:18px 16px 8px;background:linear-gradient(180deg,#0e1a33,#0b1220)}
+.site-header h1{margin:0;font-size:28px;letter-spacing:.5px;display:flex;gap:8px;align-items:center}
+.site-header .underline{height:4px;width:200px;background:linear-gradient(90deg,var(--primary),transparent);border-radius:6px;margin-top:10px}
 
-/* ========== TABS ========== */
-#tabs{display:flex; gap:8px; flex-wrap:wrap}
-#tabs button{
-  appearance:none; cursor:pointer;
-  border:1px solid var(--line);
-  background:#eef2f7; color:var(--ink);
-  padding:8px 14px; border-radius:8px; font-size:14px;
-  transition:.2s ease;
+/* Tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tab{
+  padding:8px 12px;border:1px solid var(--line);border-radius:10px;
+  background:#0b1430;color:#eaf0ff;cursor:pointer;font-weight:600
 }
-#tabs button:hover{filter:brightness(.96)}
-#tabs button.active{color:#fff; border-color:transparent}
+.tab--blue {background:linear-gradient(180deg,#1e40af,#1d4ed8)}
+.tab--teal {background:linear-gradient(180deg,#0f766e,#0d9488)}
+.tab--amber{background:linear-gradient(180deg,#b45309,#d97706)}
+.tab--purple{background:linear-gradient(180deg,#6d28d9,#7c3aed)}
+.tab--rose {background:linear-gradient(180deg,#be123c,#e11d48)}
+.tab.active{outline:2px solid #fff3; box-shadow:0 0 0 2px #000 inset}
 
-/* màu riêng cho từng tab khi ACTIVE */
-#tabs button[data-tab="lich_ubnd"].active{background:var(--blue)}
-#tabs button[data-tab="lich_vhxh"].active{background:var(--green)}
-#tabs button[data-tab="trong_tam_thang"].active{background:var(--orange)}
-#tabs button[data-tab="nhiem_vu_cbcc"].active{background:var(--purple)}
-#tabs button[data-tab="bao_cao"].active{background:var(--pink)}
-
-/* viền nhạt theo màu khi KHÔNG active để tạo nhận diện */
-#tabs button[data-tab="lich_ubnd"]{border-color:color-mix(in srgb,var(--blue) 30%,#fff)}
-#tabs button[data-tab="lich_vhxh"]{border-color:color-mix(in srgb,var(--green) 30%,#fff)}
-#tabs button[data-tab="trong_tam_thang"]{border-color:color-mix(in srgb,var(--orange) 30%,#fff)}
-#tabs button[data-tab="nhiem_vu_cbcc"]{border-color:color-mix(in srgb,var(--purple) 30%,#fff)}
-#tabs button[data-tab="bao_cao"]{border-color:color-mix(in srgb,var(--pink) 30%,#fff)}
-
-/* ========== THANH CÔNG CỤ ========== */
+/* Toolbar */
 main{padding:16px}
-.toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
-.toolbar input[type="search"],
-.toolbar select,.toolbar button{
-  background:#fff; border:1px solid var(--line);
-  border-radius:8px; padding:9px 12px; font-size:14px
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 14px}
+.toolbar input[type="search"], .toolbar select{
+  background:#0e1830;border:1px solid var(--line);color:var(--text);
+  padding:8px 10px;border-radius:8px;min-width:180px
 }
-#btn-add{background:#22c55e; color:#fff; border-color:#16a34a; font-weight:600}
-#btn-add:hover{filter:brightness(.95)}
 
-/* ========== BẢNG ========== */
-table{width:100%; border-collapse:collapse; background:var(--card); border-radius:10px; overflow:hidden}
-thead th{
-  text-align:left; font-size:13px; color:#fff; padding:10px;
-  background:#0a5dbd; /* màu mặc định; sẽ đổi theo tab hiện thời */
+/* Buttons */
+.btn{padding:8px 12px;border:1px solid var(--line);background:#101b33;color:#e7edf8;border-radius:8px;cursor:pointer}
+.btn--primary{background:linear-gradient(180deg,#2563eb,#1d4ed8);border-color:#1e40af;color:#fff}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* Table */
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#0b1326}
+.grid{width:100%;border-collapse:collapse}
+.grid th,.grid td{border-bottom:1px solid var(--line);padding:10px 12px;vertical-align:top}
+.grid thead th{position:sticky;top:0;background:#0d1731;color:#cfd8ff;z-index:1}
+.grid tbody tr:nth-child(odd){background:#0c162d}
+.link{color:#93c5fd;text-decoration:underline}
+
+/* Empty & error */
+.empty{padding:16px;color:var(--muted)}
+.alert{padding:10px 12px;border-radius:8px;margin:8px 0}
+.alert--error{background:#3f1a1f;color:#fecaca;border:1px solid #7f1d1d}
+[hidden]{display:none!important}
+
+/* Dialog */
+dialog{border:none;border-radius:12px;padding:0;background:#0e1730;color:var(--text);width:min(720px,96%)}
+.dialog{padding:0}
+.dialog__header{padding:14px 16px;border-bottom:1px solid var(--line)}
+.dialog__body{padding:14px 16px;max-height:60vh;overflow:auto}
+.dialog__footer{padding:12px 16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.row{display:grid;grid-template-columns:180px 1fr;gap:10px;margin:10px 0}
+.row label{color:#cbd5e1;align-self:center}
+.row input,.row select,.row textarea{
+  width:100%;background:#0a1328;border:1px solid var(--line);color:var(--text);
+  padding:8px 10px;border-radius:8px
 }
-tbody td{padding:9px 10px; border-bottom:1px solid var(--line); font-size:14px}
-tbody tr:hover{background:#f0f7ff}
+.file-row{display:flex;gap:8px;align-items:center}
 
-/* dải màu header theo tab đang mở (thêm class trên body bằng JS nếu muốn),
-   hoặc đơn giản dùng gradient xanh mặc định như trên */
-
-/* ========== BADGE TRẠNG THÁI ========== */
-.badge{padding:4px 8px; border-radius:6px; font-size:12px; color:#fff; font-weight:600}
-.status-Cho{background:#6b7280}
-.status-Dang{background:#0ea5e9}
-.status-Hoan{background:#22c55e}
-.status-Qua{background:#ef4444}
-
-/* ========== LINK ========== */
-a.link{color:#0a5dbd; text-decoration:none; font-weight:600}
-a.link:hover{text-decoration:underline}
-
-/* ========== DIALOG FORM ========== */
-dialog{
-  border:none; border-radius:12px; padding:18px; width:520px; max-width:95%;
-  box-shadow:0 12px 32px rgba(0,0,0,.25); background:#fff
-}
-#dlg-title{margin:0 0 10px 0; font-size:20px; font-weight:700}
-#form-fields .row{margin:10px 0}
-#form-fields label{display:block; font-size:13px; color:var(--muted); margin-bottom:4px}
-#form-fields input,#form-fields select,#form-fields textarea{
-  width:100%; padding:9px 12px; border:1px solid var(--line); border-radius:8px; font-size:14px; background:#fff
-}
-.file-row{display:flex; gap:8px; align-items:center}
-dialog menu{display:flex; justify-content:flex-end; gap:10px; margin-top:12px}
-dialog button{padding:9px 14px; border-radius:8px; border:1px solid var(--line); font-size:14px}
-#dlg-save{background:#0a5dbd; color:#fff; border-color:#0a5dbd}
-#dlg-cancel{background:#eef2f7}
-
-/* ========== THÔNG BÁO ========== */
-.error{color:#ef4444; margin:10px 0}
-.muted{color:var(--muted); font-style:italic}
-
-/* ========== MOBILE ========== */
-@media (max-width:720px){
-  #tabs{gap:6px}
-  #tabs button{flex:1 1 100%}
-  dialog{width:95%}
-}
-/* ===== Màu nhãn trạng thái ===== */
+/* Badges trạng thái */
 .badge{padding:4px 8px;border-radius:6px;font-size:12px;color:#fff;font-weight:700}
-.badge--cho{background:#6b7280}        /* Chưa thực hiện: xám */
-.badge--dang{background:#0ea5e9}       /* Đang thực hiện: xanh dương nhạt */
-.badge--hoan{background:#22c55e}       /* Hoàn thành: xanh lá */
-.badge--qua{background:#ef4444}        /* Quá hạn: đỏ */
-.badge--tamdung{background:#f59e0b}    /* Tạm dừng: cam (nếu có) */
+.badge--cho{background:var(--gray)}      /* Chưa thực hiện */
+.badge--dang{background:var(--sky)}      /* Đang thực hiện */
+.badge--hoan{background:var(--green)}    /* Hoàn thành */
+.badge--qua{background:var(--red)}       /* Quá hạn */
+.badge--tamdung{background:var(--orange)}/* Tạm dừng */
 
+.footer{padding:18px;color:#9ca3af;text-align:center}
