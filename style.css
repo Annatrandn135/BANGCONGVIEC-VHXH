@@ -1,3 +1,4 @@
+
 * { box-sizing: border-box; }
 body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
 header { padding: 12px 16px; background: #0b5ed7; color: #fff; }
@@ -9,24 +10,33 @@ main { padding: 12px 16px; }
 .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
 .toolbar input, .toolbar select { padding: 6px 8px; }
 #btn-add { padding: 8px 12px; border: 0; border-radius: 6px; background: #198754; color: #fff; cursor: pointer; }
+
 table { width: 100%; border-collapse: collapse; }
 thead th, tbody td { border: 1px solid #e6e6e6; padding: 8px; vertical-align: top; }
 thead th { background: #f7f7f7; position: sticky; top: 0; }
 tbody tr:nth-child(even) { background: #fafafa; }
+
 .badge { padding: 2px 6px; border-radius: 10px; font-size: 12px; display: inline-block; }
-.badge.status-Cho { background: #f8d7da; }
+.badge.status-Cho { background: #dee2e6; }
 .badge.status-Dang { background: #fff3cd; }
 .badge.status-Hoan { background: #d1e7dd; }
 .badge.status-Qua { background: #f8d7da; }
+
 .muted { color: #666; padding: 10px; }
 .error { color: #c00; padding: 10px; }
-dialog { border: none; border-radius: 8px; width: min(800px, 96vw); }
+
+dialog { border: none; border-radius: 8px; width: min(900px, 96vw); }
 dialog form { padding: 10px; }
-dialog form .row { display: grid; grid-template-columns: 160px 1fr; gap: 8px; margin-bottom: 8px; }
+dialog form .row { display: grid; grid-template-columns: 180px 1fr; gap: 8px; margin-bottom: 8px; }
 dialog input, dialog textarea, dialog select { width: 100%; padding: 6px 8px; }
 menu { display: flex; gap: 10px; justify-content: flex-end; padding: 0; }
 menu button { padding: 8px 12px; border: 0; border-radius: 6px; cursor: pointer; }
 menu #dlg-save { background: #0b5ed7; color: #fff; }
 menu #dlg-cancel { background: #adb5bd; color: #fff; }
+
 footer { padding: 12px 16px; background: #f2f2f2; }
 .link { word-break: break-all; }
+
+/* Upload row */
+.file-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.file-row input[type="url"] { min-width: 280px; }
