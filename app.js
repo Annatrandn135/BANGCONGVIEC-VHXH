@@ -304,3 +304,4 @@ async function del(rec){
     loadData();
   }catch(e){ alert("Lỗi mạng: "+e.message); }
 }
+
