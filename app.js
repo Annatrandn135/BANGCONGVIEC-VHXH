@@ -2,7 +2,7 @@
  * FRONTEND – Bảng công việc phòng VH-XH
  * LƯU Ý: Thay GAS_BASE_URL bằng URL Web App (đuôi /exec)
  */
-const GAS_BASE_URL = "YOUR_WEB_APP_URL_HERE";   // <-- THAY BẰNG URL CỦA BẠN
+const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbyBNm3HbgZKabYWPFRcqTWvwMIstMR_GYr8JD1Bac73Ffjfr4kRGopsBcDJRJ_juNB3/exec";   // <-- THAY BẰNG URL CỦA BẠN
 
 /* ====================== CẤU HÌNH SHEET ====================== */
 const SHEETS = {
@@ -273,6 +273,7 @@ async function del(rec){
   if (!data.success){ alert("Lỗi: "+data.message); return; }
   loadData();
 }
+
 
 
 
