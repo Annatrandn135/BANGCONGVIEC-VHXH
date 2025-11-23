@@ -1,4 +1,4 @@
-const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbwE0xwDSwrn2KSKZ1IKOutfjsJ9M95OGpsynd7xpv0xSZFhYQnlDA_gTraxgI_rglugVA/exec";
+const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbzSdy-EqOoprnnmmpTOjshGXU3Thv2KUKqQQnIXafmaqV3RQzuR3Xzp8wSng9JUfXT_/exec";
 
 const SHEETS = {
   lich_ubnd: {
@@ -55,4 +55,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function switchTab(tab) {
+
 
