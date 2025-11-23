@@ -1,35 +1,50 @@
-<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bảng công việc phòng VH-XH</title>
-  <link rel="stylesheet" href="style.css?v=12">
-</head>
-<body>
-  <header>
-    <h1>BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
-    <nav id="tabs">
-      <button data-tab="lich_ubnd" class="active">1. Lịch công tác UBND phường</button>
-      <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
-      <button data-tab="trong_tam_thang">3. Nhiệm vụ trọng tâm tháng</button>
-      <button data-tab="nhiem_vu_cbcc">4. Nhiệm vụ từng CBCC</button>
-      <button data-tab="bao_cao">5. Báo cáo tuần/tháng/quý</button>
-    </nav>
-  </header>
+<header>
+  <h1>BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
+  <nav id="tabs">
+    <button data-tab="lich_ubnd" class="active">1. Lịch công tác UBND phường</button>
+    <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
+    <button data-tab="trong_tam_thang">3. Nhiệm vụ trọng tâm tháng</button>
+    <button data-tab="nhiem_vu_cbcc">4. Nhiệm vụ từng CBCC</button>
+    <button data-tab="bao_cao">5. Báo cáo tuần/tháng/quý</button>
+  </nav>
+</header>
 
-  <main>
-    <!-- Thanh công cụ -->
-    <section class="toolbar">
-      <button id="btn-add">Thêm mới</button>
-      <input id="search" type="search" placeholder="Tìm kiếm...">
-      <select id="filter-canbo">
-        <option value="">-- Lọc theo CBCC --</option>
-      </select>
-      <select id="filter-status">
-        <option value="">-- Trạng thái14" defer></script>
-</body>
-</html>
+<main>
+  <section class="toolbar">
+    <button id="btn-add">Thêm mới</button>
+    <input id="search" type="search" placeholder="Tìm kiếm..." />
+    <select id="filter-canbo"><option value="">-- Lọc theo CBCC --</option></select>
+    <select id="filter-status">
+      <option value="">-- Trạng thái --</option>
+      <option value="Chưa thực hiện">Chưa thực hiện</option>
+      <option value="Đang thực hiện">Đang thực hiện</option>
+      <option value="Hoàn thành">Hoàn thành</option>
+      <option value="Quá hạn">Quá hạn</option>
+    </select>
+  </section>
+
+  <div id="error" class="error"></div>
+  <div id="empty" class="muted"></div>
+
+  <table>
+    <thead id="table-head"></thead>
+    <tbody id="table-body"></tbody>
+  </table>
+</main>
+
+<dialog id="dlg">
+  <form method="dialog">
+    <h3 id="dlg-title">Biểu mẫu</h3>
+    <div id="form-fields"></div>
+    <menu>
+      <button id="dlg-cancel" type="button">Hủy</button>
+      <button id="dlg-save" type="button">Lưu</button>
+    </menu>
+  </form>
+</dialog>
+
+<script src="app.js?v=16" defer></script>
+
 
 
 
