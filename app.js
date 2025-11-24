@@ -1,18 +1,15 @@
 /**
  * FRONTEND – Bảng công việc phòng VH-XH
- * Đọc/ghi dùng /exec (hoạt động). Upload: tạm tắt nếu thiếu googleusercontent URL.
+ * Đọc/ghi qua GAS_BASE_URL (/exec). Upload file: mở trang Upload GAS ở tab mới, copy link dán về.
  */
 
-/* URL Web App /exec (đã gắn của bạn) */
+/* 1) URL Web App /exec để CRUD (thay nếu bạn có URL khác) */
 const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbzHeDlLSVw3cBwyy1-FicxbMeOSk1CUMNFO7TenF3BDMer2tkMbkHJ5dfemKVkXznUl/exec";
 
-/* URL Upload (googleusercontent.com) – hiện để TRỐNG vì tài khoản của bạn chưa tạo được.
-   Khi có URL đúng dạng:
-   https://script.googleusercontent.com/macros/echo?user_content_key=...  => dán vào đây.
-   Lập tức nút “Tải lên” sẽ bật và hoạt động. */
-let GAS_UPLOAD_URL = "";   // <-- dán URL googleusercontent.com vào đây khi có
+/* 2) URL trang Upload (/exec) – TRIỂN KHAI THEO HƯỚNG DẪN, rồi DÁN URL VÀO ĐÂY */
+const UPLOAD_EXEC_URL = "https://script.google.com/macros/s/AKfycbymXO6kOFiVhgmjWxS3AxmmkPxYIfnybrkfQXscr1UV-AWbCO8Q_FFglwQsQpENMbyw/exec"; // ví dụ: https://script.google.com/macros/s/AKfycb.../exec
 
-/* ====================== CẤU HÌNH SHEET ====================== */
+/* ============ CẤU HÌNH CÁC SHEET ============ */
 const SHEETS = {
   lich_ubnd: {
     title: "Lịch công tác UBND phường",
@@ -41,27 +38,26 @@ const SHEETS = {
   }
 };
 
-/* ====================== TIỆN ÍCH ====================== */
+/* ============ TIỆN ÍCH ============ */
 function formatStatus(val) {
   if (!val) return "";
   const v = String(val).toLowerCase();
   if (v.includes("hoàn")) return '<span class="badge status-Hoan">Hoàn thành</span>';
   if (v.includes("đang")) return '<span class="badge status-Dang">Đang thực hiện</span>';
-  if (v.includes("quá")) return '<span class="badge status-Qua">Quá hạn</span>';
+  if (v.includes("quá"))  return '<span class="badge status-Qua">Quá hạn</span>';
   return '<span class="badge status-Cho">Chưa thực hiện</span>';
 }
 function formatDateForView(val) {
   if (!val) return "";
   const d = new Date(val);
   if (isNaN(d.getTime())) return String(val);
-  // Chuẩn yyyy-MM-dd cho input[type=date]
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth()+1).padStart(2,"0");
   const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
 }
 
-/* ====================== TRẠNG THÁI TOÀN CỤC ====================== */
+/* ============ STATE ============ */
 let currentTab = "lich_ubnd";
 let cache = {};
 let cbccList = [
@@ -70,7 +66,7 @@ let cbccList = [
   "Phúc","Hân","Nguyên","Thành"
 ];
 
-/* ====================== NẠP CBCC TỪ SHEET ====================== */
+/* ============ NẠP DM CBCC (nếu có) ============ */
 async function loadCBCCFromSheetIfAny() {
   try {
     const url = new URL(GAS_BASE_URL);
@@ -82,7 +78,7 @@ async function loadCBCCFromSheetIfAny() {
       const firstCol = Object.keys(data.records[0])[0];
       cbccList = data.records.map(r => r[firstCol]).filter(Boolean);
     }
-  } catch(e){}
+  } catch(e) {}
   loadCBCCOptions();
 }
 function loadCBCCOptions() {
@@ -96,7 +92,7 @@ function loadCBCCOptions() {
   });
 }
 
-/* ====================== KHỞI TẠO ====================== */
+/* ============ KHỞI TẠO ============ */
 document.addEventListener("DOMContentLoaded", async ()=>{
   await loadCBCCFromSheetIfAny();
 
@@ -109,9 +105,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   document.getElementById("filter-canbo").addEventListener("change", renderTable);
   document.getElementById("filter-status").addEventListener("change", renderTable);
 
-  // Thông báo nếu thiếu Upload URL
-  if (!GAS_UPLOAD_URL) document.getElementById("upload-tip").style.display = "inline";
-
   switchTab(currentTab);
 });
 
@@ -123,7 +116,7 @@ function switchTab(tab) {
   loadData();
 }
 
-/* ====================== TẢI DỮ LIỆU ====================== */
+/* ============ TẢI DỮ LIỆU ============ */
 async function loadData(){
   const meta = SHEETS[currentTab];
 
@@ -150,7 +143,7 @@ async function loadData(){
   }
 }
 
-/* ====================== HIỂN THỊ BẢNG ====================== */
+/* ============ HIỂN THỊ BẢNG ============ */
 function renderTable(){
   const meta = SHEETS[currentTab];
   const q = document.getElementById("search").value.trim().toLowerCase();
@@ -197,19 +190,7 @@ function renderTable(){
   });
 }
 
-/* ====================== UPLOAD (tạm tắt nếu thiếu URL hợp lệ) ====================== */
-async function uploadFileViaGAS(file){
-  if (!GAS_UPLOAD_URL) throw new Error("Thiếu Upload URL (googleusercontent.com)");
-  const fd = new FormData();
-  fd.append("action","upload");
-  fd.append("file",file,file.name);
-  const res = await fetch(GAS_UPLOAD_URL,{ method:"POST", body:fd });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.message || "Upload lỗi");
-  return data.url;
-}
-
-/* ====================== FORM THÊM/SỬA ====================== */
+/* ============ FORM THÊM/SỬA ============ */
 function buildFields(record={}){
   const meta = SHEETS[currentTab];
   const fields = document.getElementById("form-fields");
@@ -232,7 +213,6 @@ function buildFields(record={}){
       input = `<textarea id="${id}" rows="3">${val}</textarea>`;
     }
     else if (isDate){
-      // chuẩn yyyy-MM-dd cho input date
       let dateValue = "";
       if (val) {
         const d = new Date(val);
@@ -251,13 +231,12 @@ function buildFields(record={}){
       </select>`;
     }
     else if (isLink){
-      const disabled = GAS_UPLOAD_URL ? "" : "disabled";
-      const tip = GAS_UPLOAD_URL ? "" : 'title="Chưa cấu hình Upload URL"';
+      // Cơ chế mở trang Upload ở tab mới, sau đó dán link về ô URL
       input = `
         <div class="file-row">
-          <input type="url" id="${id}" value="${val}" placeholder="https://...">
-          <input type="file" id="${id}_file" ${disabled}>
-          <button type="button" id="${id}_btn" class="btn" ${disabled} ${tip}>Tải lên</button>
+          <input type="url" id="${id}" value="${val}" placeholder="https://..." style="flex:1">
+          <button type="button" id="${id}_open" class="btn">Tải file</button>
+          <button type="button" id="${id}_paste" class="btn">Dán link</button>
         </div>`;
     }
     else {
@@ -269,22 +248,28 @@ function buildFields(record={}){
       ${input}
     `);
 
-    if (isLink && GAS_UPLOAD_URL){
-      const btn = document.getElementById(`${id}_btn`);
-      const file = document.getElementById(`${id}_file`);
-      const urlBox = document.getElementById(id);
+    if (isLink){
+      const openBtn = document.getElementById(`${id}_open`);
+      const pasteBtn = document.getElementById(`${id}_paste`);
+      const urlBox  = document.getElementById(id);
 
-      btn.onclick = async ()=>{
-        if (!file.files || !file.files[0]){ alert("Chọn tệp trước."); return; }
-        btn.disabled = true; btn.textContent = "Đang tải...";
-        try{
-          const up = await uploadFileViaGAS(file.files[0]); // {url: ...}
-          urlBox.value = up;
-          alert("Đã tải lên xong!");
-        } catch(e){
-          alert("Upload lỗi: "+e.message);
+      openBtn.onclick = ()=>{
+        if (!UPLOAD_EXEC_URL || !/^https?:\/\//i.test(UPLOAD_EXEC_URL)) {
+          alert("Chưa cấu hình URL trang Upload (/exec). Hãy thay UPLOAD_EXEC_URL trong app.js.");
+          return;
         }
-        btn.disabled = false; btn.textContent = "Tải lên";
+        window.open(UPLOAD_EXEC_URL, "_blank", "noopener");
+        alert('Đã mở trang Upload. Tải tệp xong, bấm "Copy link", quay lại đây và bấm "Dán link".');
+      };
+
+      pasteBtn.onclick = async ()=>{
+        try {
+          const t = await navigator.clipboard.readText();
+          if (t && /^https?:\/\//i.test(t)) urlBox.value = t.trim();
+          else alert("Clipboard không có URL hợp lệ. Dán thủ công bằng Ctrl+V.");
+        } catch {
+          alert("Trình duyệt không cho đọc clipboard. Dán thủ công bằng Ctrl+V.");
+        }
       };
     }
   });
@@ -298,7 +283,6 @@ function openCreate(){
   document.getElementById("dlg-save").onclick = saveCreate;
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
-
 function openEdit(rec){
   document.getElementById("dlg-title").textContent = "Cập nhật";
   buildFields(rec);
@@ -308,6 +292,7 @@ function openEdit(rec){
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
 
+/* ============ LƯU/XÓA ============ */
 async function saveCreate(){ await saveRecord("create"); }
 async function saveUpdate(id){ await saveRecord("update",id); }
 
@@ -354,4 +339,3 @@ async function del(rec){
   }
   loadData();
 }
-
