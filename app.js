@@ -1,8 +1,16 @@
 /**
- * FRONTEND – Bảng công việc phòng VH-XH (đã vá CORS cho upload)
- * LƯU Ý: Thay GAS_BASE_URL bằng URL Web App (đuôi /exec)
+ * FRONTEND – Bảng công việc phòng VH-XH
+ * Đọc/ghi dùng /exec (hoạt động). Upload: tạm tắt nếu thiếu googleusercontent URL.
  */
-const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbyBNm3HbgZKabYWPFRcqTWvwMIstMR_GYr8JD1Bac73Ffjfr4kRGopsBcDJRJ_juNB3/exec"; // <-- ĐỔI LẠI URL CỦA BẠN
+
+/* URL Web App /exec (đã gắn của bạn) */
+const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbyBNm3HbgZKabYWPFRcqTWvwMIstMR_GYr8JD1Bac73Ffjfr4kRGopsBcDJRJ_juNB3/exec";
+
+/* URL Upload (googleusercontent.com) – hiện để TRỐNG vì tài khoản của bạn chưa tạo được.
+   Khi có URL đúng dạng:
+   https://script.googleusercontent.com/macros/echo?user_content_key=...  => dán vào đây.
+   Lập tức nút “Tải lên” sẽ bật và hoạt động. */
+let GAS_UPLOAD_URL = "";   // <-- dán URL googleusercontent.com vào đây khi có
 
 /* ====================== CẤU HÌNH SHEET ====================== */
 const SHEETS = {
@@ -37,25 +45,20 @@ const SHEETS = {
 function formatStatus(val) {
   if (!val) return "";
   const v = String(val).toLowerCase();
-  if (v.includes("hoàn")) return '<span class="badge status-done">Hoàn thành</span>';
-  if (v.includes("đang")) return '<span class="badge status-doing">Đang thực hiện</span>';
-  if (v.includes("quá"))  return '<span class="badge status-late">Quá hạn</span>';
-  return '<span class="badge status-todo">Chưa thực hiện</span>';
-}
-function toDateInputValue(s) {
-  if (!s) return "";
-  const d = new Date(s);
-  if (isNaN(d.getTime())) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const dd = String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${dd}`;
+  if (v.includes("hoàn")) return '<span class="badge status-Hoan">Hoàn thành</span>';
+  if (v.includes("đang")) return '<span class="badge status-Dang">Đang thực hiện</span>';
+  if (v.includes("quá")) return '<span class="badge status-Qua">Quá hạn</span>';
+  return '<span class="badge status-Cho">Chưa thực hiện</span>';
 }
 function formatDateForView(val) {
   if (!val) return "";
   const d = new Date(val);
   if (isNaN(d.getTime())) return String(val);
-  return d.toLocaleDateString('vi-VN');
+  // Chuẩn yyyy-MM-dd cho input[type=date]
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 /* ====================== TRẠNG THÁI TOÀN CỤC ====================== */
@@ -79,7 +82,7 @@ async function loadCBCCFromSheetIfAny() {
       const firstCol = Object.keys(data.records[0])[0];
       cbccList = data.records.map(r => r[firstCol]).filter(Boolean);
     }
-  } catch(e) {/* bỏ qua nếu DM_CBCC chưa có */}
+  } catch(e){}
   loadCBCCOptions();
 }
 function loadCBCCOptions() {
@@ -106,11 +109,12 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   document.getElementById("filter-canbo").addEventListener("change", renderTable);
   document.getElementById("filter-status").addEventListener("change", renderTable);
 
-  // tạo iframe upload ẩn sẵn (bypass CORS)
-  ensureUploadIframe();
+  // Thông báo nếu thiếu Upload URL
+  if (!GAS_UPLOAD_URL) document.getElementById("upload-tip").style.display = "inline";
 
   switchTab(currentTab);
 });
+
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll("#tabs button").forEach(b =>
@@ -134,10 +138,12 @@ async function loadData(){
     const url = new URL(GAS_BASE_URL);
     url.searchParams.set("action","list");
     url.searchParams.set("sheet",meta.sheetName);
+
     const res = await fetch(url);
     const data = await res.json();
     cache[currentTab] = Array.isArray(data.records) ? data.records : [];
     renderTable();
+
   } catch(e){
     document.getElementById("error").textContent =
       "Không tải được dữ liệu: " + (e.message || e);
@@ -181,8 +187,8 @@ function renderTable(){
 
     const ops = document.createElement("td");
     ops.innerHTML = `
-      <button data-op="edit">Sửa</button>
-      <button data-op="del">Xóa</button>
+      <button class="btn" data-op="edit">Sửa</button>
+      <button class="btn" data-op="del">Xóa</button>
     `;
     ops.querySelector('[data-op="edit"]').onclick = ()=>openEdit(r);
     ops.querySelector('[data-op="del"]').onclick = ()=>del(r);
@@ -191,50 +197,16 @@ function renderTable(){
   });
 }
 
-/* ====================== UPLOAD QUA IFRAME (BYPASS CORS) ====================== */
-function ensureUploadIframe() {
-  if (document.getElementById("upload_iframe")) return;
-  const iframe = document.createElement("iframe");
-  iframe.name = "upload_iframe";
-  iframe.id = "upload_iframe";
-  iframe.style.display = "none";
-  document.body.appendChild(iframe);
-}
-function uploadViaIframe(fileInput, cb) {
-  // Tạo form tạm để POST thẳng tới Apps Script (không fetch/XHR)
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.enctype = "multipart/form-data";
-  form.action = GAS_BASE_URL + "?action=upload";
-  form.target = "upload_iframe";
-  form.style.display = "none";
-
-  const cloned = fileInput.cloneNode();
-  cloned.name = "file";
-  form.appendChild(cloned);
-
-  // Chuyển file người dùng đã chọn vào input mới
-  // (trên Chrome không thể set FileList, nên ta chèn trực tiếp input gốc vào form)
-  form.replaceChild(fileInput, cloned);
-
-  // Bắt kết quả trả về (JSON) từ iframe
-  const iframe = document.getElementById("upload_iframe");
-  const onLoad = () => {
-    try {
-      const doc = iframe.contentDocument || iframe.contentWindow.document;
-      const text = (doc.body && doc.body.innerText) ? doc.body.innerText : "";
-      const json = JSON.parse(text || "{}");
-      cb(null, json);
-    } catch (err) {
-      cb(err);
-    } finally {
-      iframe.removeEventListener("load", onLoad);
-      form.remove(); // dọn
-    }
-  };
-  iframe.addEventListener("load", onLoad);
-  document.body.appendChild(form);
-  form.submit();
+/* ====================== UPLOAD (tạm tắt nếu thiếu URL hợp lệ) ====================== */
+async function uploadFileViaGAS(file){
+  if (!GAS_UPLOAD_URL) throw new Error("Thiếu Upload URL (googleusercontent.com)");
+  const fd = new FormData();
+  fd.append("action","upload");
+  fd.append("file",file,file.name);
+  const res = await fetch(GAS_UPLOAD_URL,{ method:"POST", body:fd });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message || "Upload lỗi");
+  return data.url;
 }
 
 /* ====================== FORM THÊM/SỬA ====================== */
@@ -255,11 +227,23 @@ function buildFields(record={}){
     const isLink = /(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col);
 
     let input;
+
     if (isLong){
       input = `<textarea id="${id}" rows="3">${val}</textarea>`;
     }
     else if (isDate){
-      input = `<input id="${id}" type="date" value="${toDateInputValue(val)}">`;
+      // chuẩn yyyy-MM-dd cho input date
+      let dateValue = "";
+      if (val) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())){
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth()+1).padStart(2,"0");
+          const dd = String(d.getDate()).padStart(2,"0");
+          dateValue = `${yyyy}-${mm}-${dd}`;
+        }
+      }
+      input = `<input id="${id}" type="date" value="${dateValue}">`;
     }
     else if (isCanBo){
       input = `<select id="${id}">
@@ -267,11 +251,13 @@ function buildFields(record={}){
       </select>`;
     }
     else if (isLink){
+      const disabled = GAS_UPLOAD_URL ? "" : "disabled";
+      const tip = GAS_UPLOAD_URL ? "" : 'title="Chưa cấu hình Upload URL"';
       input = `
         <div class="file-row">
           <input type="url" id="${id}" value="${val}" placeholder="https://...">
-          <input type="file" id="${id}_file" accept=".pdf,.doc,.docx,.xls,.xlsx">
-          <button type="button" id="${id}_btn">Tải lên</button>
+          <input type="file" id="${id}_file" ${disabled}>
+          <button type="button" id="${id}_btn" class="btn" ${disabled} ${tip}>Tải lên</button>
         </div>`;
     }
     else {
@@ -279,32 +265,26 @@ function buildFields(record={}){
     }
 
     fields.insertAdjacentHTML("beforeend",`
-      <div class="row">
-        <label>${col}</label>
-        ${input}
-      </div>
+      <label>${col}</label>
+      ${input}
     `);
 
-    if (isLink){
+    if (isLink && GAS_UPLOAD_URL){
       const btn = document.getElementById(`${id}_btn`);
       const file = document.getElementById(`${id}_file`);
       const urlBox = document.getElementById(id);
 
-      btn.onclick = ()=>{
-        if (!file.files || !file.files[0]){
-          alert("Chọn tệp trước.");
-          return;
-        }
-        btn.disabled = true;
-        btn.textContent = "Đang tải...";
-        uploadViaIframe(file, (err, result)=>{
-          btn.disabled = false;
-          btn.textContent = "Tải lên";
-          if (err) { alert("Upload lỗi: " + err); return; }
-          if (!result || !result.success) { alert("Upload lỗi: " + (result?.message || "Không rõ")); return; }
-          urlBox.value = result.url; // Điền URL Drive
+      btn.onclick = async ()=>{
+        if (!file.files || !file.files[0]){ alert("Chọn tệp trước."); return; }
+        btn.disabled = true; btn.textContent = "Đang tải...";
+        try{
+          const up = await uploadFileViaGAS(file.files[0]); // {url: ...}
+          urlBox.value = up;
           alert("Đã tải lên xong!");
-        });
+        } catch(e){
+          alert("Upload lỗi: "+e.message);
+        }
+        btn.disabled = false; btn.textContent = "Tải lên";
       };
     }
   });
@@ -318,6 +298,7 @@ function openCreate(){
   document.getElementById("dlg-save").onclick = saveCreate;
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
+
 function openEdit(rec){
   document.getElementById("dlg-title").textContent = "Cập nhật";
   buildFields(rec);
@@ -343,11 +324,11 @@ async function saveRecord(action,id=null){
 
   const res = await fetch(GAS_BASE_URL,{
     method:"POST",
-    headers:{ "Content-Type":"application/json" }, // JSON là safe với Apps Script
+    headers:{ "Content-Type":"application/json" },
     body:JSON.stringify(payload)
   });
-  const data = await res.json();
 
+  const data = await res.json();
   if (!data.success){
     alert("Lỗi: "+data.message);
     return;
@@ -358,16 +339,14 @@ async function saveRecord(action,id=null){
 
 async function del(rec){
   if (!confirm("Xóa bản ghi này?")) return;
+
   const meta = SHEETS[currentTab];
   const res = await fetch(GAS_BASE_URL,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"delete",
-      sheet:meta.sheetName,
-      id:rec.ID
-    })
+    body:JSON.stringify({ action:"delete", sheet:meta.sheetName, id:rec.ID })
   });
+
   const data = await res.json();
   if (!data.success){
     alert("Lỗi: "+data.message);
