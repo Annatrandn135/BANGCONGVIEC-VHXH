@@ -6,69 +6,55 @@
   <title>Bảng công việc phòng VH-XH</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <header class="app-header">
-    <div class="title-wrap">
-      <span class="logo">📘</span>
-      <h1>BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
-    </div>
+<header>
+  <h1>📘 BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
 
-    <nav id="tabs" class="tabs">
-      <button data-tab="lich_ubnd"   class="tab tab-1">1. Lịch công tác UBND phường</button>
-      <button data-tab="lich_vhxh"   class="tab tab-2">2. Lịch công tác phòng VH-XH</button>
-      <button data-tab="trong_tam_thang" class="tab tab-3">3. Nhiệm vụ trọng tâm tháng</button>
-      <button data-tab="nhiem_vu_cbcc"   class="tab tab-4">4. Nhiệm vụ từng CBCC</button>
-      <button data-tab="bao_cao"     class="tab tab-5">5. Báo cáo tuần/tháng/quý</button>
-    </nav>
-  </header>
+  <nav id="tabs">
+    <button data-tab="lich_ubnd">1. Lịch công tác UBND phường</button>
+    <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
+    <button data-tab="trong_tam_thang">3. Nhiệm vụ trọng tâm tháng</button>
+    <button data-tab="nhiem_vu_cbcc">4. Nhiệm vụ từng CBCC</button>
+    <button data-tab="bao_cao">5. Báo cáo tuần/tháng/quý</button>
+  </nav>
+</header>
 
-  <main>
-    <section class="toolbar">
-      <button id="btn-add" class="btn btn-primary">Thêm mới</button>
-      <input id="search" type="search" placeholder="Tìm kiếm...">
-      <select id="filter-canbo"></select>
-      <select id="filter-status">
-        <option value="">-- Trạng thái --</option>
-        <option value="Chưa thực hiện">Chưa thực hiện</option>
-        <option value="Đang thực hiện">Đang thực hiện</option>
-        <option value="Hoàn thành">Hoàn thành</option>
-        <option value="Quá hạn">Quá hạn</option>
-      </select>
-    </section>
+<main>
+  <section class="toolbar">
+    <button id="btn-add">Thêm mới</button>
+    <input id="search" placeholder="Tìm kiếm...">
+    <select id="filter-canbo"><option value="">-- Lọc theo CBCC --</option></select>
+    <select id="filter-status">
+      <option value="">-- Trạng thái --</option>
+      <option value="Chưa thực hiện">Chưa thực hiện</option>
+      <option value="Đang thực hiện">Đang thực hiện</option>
+      <option value="Hoàn thành">Hoàn thành</option>
+      <option value="Quá hạn">Quá hạn</option>
+    </select>
+  </section>
 
-    <section class="table-wrap">
-      <div id="error" class="error"></div>
-      <table id="tb" class="grid">
-        <thead id="table-head"></thead>
-        <tbody id="table-body"></tbody>
-      </table>
-      <div id="empty" class="empty"></div>
-    </section>
+  <table id="tbl">
+    <thead id="table-head"></thead>
+    <tbody id="table-body"></tbody>
+  </table>
 
-    <p class="foot-note">Triển khai nội bộ: Google Sheets + Apps Script + GitHub Pages</p>
-  </main>
+  <div id="empty"></div>
+  <div id="error"></div>
+</main>
 
-  <!-- Hộp thoại thêm/sửa -->
-  <dialog id="dlg" class="dialog">
-    <form method="dialog" class="dialog__body" id="dlg-form" onsubmit="return false;">
-      <div class="dialog__header">
-        <h3 id="dlg-title">Thêm mới</h3>
-        <button id="dlg-cancel" class="btn btn-light" type="button">Hủy</button>
-        <button id="dlg-save" class="btn btn-primary" type="button">Lưu</button>
-      </div>
-      <div id="form-fields" class="form-fields"></div>
-      <div class="upload-help">
-        <small>
-          * Nút <b>Tải file</b> sẽ mở trang Upload (Apps Script) ở tab mới. Sau khi tải xong:
-          bấm <b>Copy link</b> ở trang Upload rồi quay lại đây bấm <b>Dán link</b>.
-          (Nếu trang Upload đã cấu hình <code>postMessage</code> thì link sẽ tự đổ vào ô.)
-        </small>
-      </div>
-    </form>
-  </dialog>
+<!-- Dialog -->
+<dialog id="dlg">
+  <h3 id="dlg-title"></h3>
+  <div id="form-fields"></div>
 
-  <script src="app.js"></script>
+  <div class="dlg-buttons">
+    <button id="dlg-cancel">Hủy</button>
+    <button id="dlg-save" class="primary">Lưu</button>
+  </div>
+</dialog>
+
+<script src="app.js"></script>
 </body>
 </html>
-
 
