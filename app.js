@@ -4,7 +4,7 @@
  */
 
 /* URL Web App /exec (đã gắn của bạn) */
-const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbyBNm3HbgZKabYWPFRcqTWvwMIstMR_GYr8JD1Bac73Ffjfr4kRGopsBcDJRJ_juNB3/exec";
+const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbzHeDlLSVw3cBwyy1-FicxbMeOSk1CUMNFO7TenF3BDMer2tkMbkHJ5dfemKVkXznUl/exec";
 
 /* URL Upload (googleusercontent.com) – hiện để TRỐNG vì tài khoản của bạn chưa tạo được.
    Khi có URL đúng dạng:
@@ -354,3 +354,4 @@ async function del(rec){
   }
   loadData();
 }
+
