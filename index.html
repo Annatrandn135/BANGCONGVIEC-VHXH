@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BẢNG CÔNG VIỆC PHÒNG VH-XH</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="app-header">
@@ -24,18 +24,19 @@
   <main>
     <section class="toolbar">
       <button id="btn-add" class="btn btn-primary">Thêm mới</button>
-      <input id="search" type="search" placeholder="Tìm kiếm...">
+      <input id="search" type="search" placeholder="Tìm kiếm..." />
       <select id="filter-canbo"><option value="">-- Lọc theo CBCC --</option></select>
       <select id="filter-status">
         <option value="">-- Trạng thái --</option>
-        <option value="Chưa thực hiện">Chưa thực hiện</option>
-        <option value="Đang thực hiện">Đang thực hiện</option>
-        <option value="Hoàn thành">Hoàn thành</option>
-        <option value="Quá hạn">Quá hạn</option>
+        <option>Chưa thực hiện</option>
+        <option>Đang thực hiện</option>
+        <option>Hoàn thành</option>
+        <option>Quá hạn</option>
       </select>
     </section>
 
     <div id="error" class="alert error"></div>
+
     <div class="table-wrap">
       <table class="table">
         <thead id="table-head"></thead>
@@ -44,7 +45,7 @@
       <div id="empty" class="empty"></div>
     </div>
 
-    <p class="note">Triển khai nội bộ: Google Sheets + Apps Script + GitHub Pages</p>
+    <p class="note">Nền tảng: Google Sheets + Apps Script + GitHub Pages</p>
   </main>
 
   <!-- Hộp thoại thêm/sửa -->
@@ -52,9 +53,7 @@
     <form method="dialog" class="dialog-card" id="dlg-form" onsubmit="return false;">
       <div class="dialog-head">
         <h3 id="dlg-title">Thêm mới</h3>
-        <small id="upload-tip" class="muted" style="display:none;">
-          (Tải tệp đang tạm tắt vì thiếu Upload URL hợp lệ)
-        </small>
+        <small id="upload-tip" class="muted">(Tải tệp: mở trang Upload GAS → copy link → dán vào ô URL)</small>
       </div>
       <div id="form-fields" class="form-grid"></div>
       <div class="dialog-actions">
@@ -67,5 +66,3 @@
   <script defer src="app.js"></script>
 </body>
 </html>
-
-
