@@ -1,14 +1,10 @@
 /**
  * FRONTEND – Bảng công việc phòng VH-XH
- * CRUD đọc/ghi vẫn qua GAS /exec của bạn.
- * Các cột liên kết/đính kèm dùng nút upload thẳng lên GitHub repo /files.
+ * LƯU Ý: thay đúng URL Apps Script (dùng /exec hay /echo đều được để LIST/CRUD).
  */
+const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbww9btbN6jilLIabRmojk3N0wUDznR9X3Es-lONDbmUjW2AY_yMRvhULl4Hiw6T_RAG/exec";
 
-/*** CẤU HÌNH ***/
-const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbww9btbN6jilLIabRmojk3N0wUDznR9X3Es-lONDbmUjW2AY_yMRvhULl4Hiw6T_RAG/exec"; // CRUD
-const GITHUB_UPLOAD_URL = "https://github.com/annatrandn135/BANGCONGVIEC-VHXH/upload/main/files"; // trang upload
-const GH_PAGES_BASE = "https://annatrandn135.github.io/BANGCONGVIEC-VHXH/files/"; // base link sau upload
-
+/* ====================== CẤU HÌNH SHEET ====================== */
 const SHEETS = {
   lich_ubnd: {
     title: "Lịch công tác UBND phường",
@@ -37,87 +33,106 @@ const SHEETS = {
   }
 };
 
-/*** TIỆN ÍCH ***/
+/* ====================== TIỆN ÍCH ====================== */
 function formatStatus(val) {
   if (!val) return "";
-  const v = (""+val).toLowerCase();
+  const v = String(val).toLowerCase();
   if (v.includes("hoàn")) return '<span class="badge status-Hoan">Hoàn thành</span>';
   if (v.includes("đang")) return '<span class="badge status-Dang">Đang thực hiện</span>';
-  if (v.includes("quá"))  return '<span class="badge status-Qua">Quá hạn</span>';
+  if (v.includes("trễ") || v.includes("quá")) return '<span class="badge status-Qua">Quá hạn</span>';
   return '<span class="badge status-Cho">Chưa thực hiện</span>';
 }
-function fmtDate(val){
+function formatDateForView(val) {
   if (!val) return "";
-  const d = new Date(val);
-  if (isNaN(d)) return val;
-  return d.toLocaleDateString('vi-VN');
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return String(val);
+    return d.toLocaleDateString('vi-VN');
+  } catch(e){ return String(val); }
 }
 
-/*** STATE ***/
+/* ====================== TRẠNG THÁI TOÀN CỤC ====================== */
 let currentTab = "lich_ubnd";
 let cache = {};
-let cbccList = ["Tú Anh","Nguyệt","Nhiên","Loan","L. Uyên","Hùng","Đào","Thúy","Ly","Hiền","Lưu","Thảo","Giang","Huy","Cường","Phong","Duy","Thân","Dung","T. Uyên","Văn","Trí","Phúc","Hân","Nguyên","Thành"];
+let cbccList = [
+  "Tú Anh","Nguyệt","Nhiên","Loan","L. Uyên","Hùng","Đào","Thúy","Ly","Hiền","Lưu",
+  "Thảo","Giang","Huy","Cường","Phong","Duy","Thân","Dung","T. Uyên","Văn","Trí",
+  "Phúc","Hân","Nguyên","Thành"
+];
 
-/*** NẠP DM_CBCC (nếu có) ***/
-async function loadCBCCFromSheetIfAny(){
-  try{
+/* ====================== NẠP CBCC TỪ SHEET ====================== */
+async function loadCBCCFromSheetIfAny() {
+  try {
     const url = new URL(GAS_BASE_URL);
     url.searchParams.set("action","list");
     url.searchParams.set("sheet","DM_CBCC");
-    const r = await fetch(url);
-    const j = await r.json();
-    if (Array.isArray(j.records) && j.records.length){
-      const first = Object.keys(j.records[0])[0];
-      cbccList = j.records.map(x=>x[first]).filter(Boolean);
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.records?.length) {
+      const firstCol = Object.keys(data.records[0])[0];
+      cbccList = data.records.map(r => r[firstCol]).filter(Boolean);
     }
-  }catch(_){}
+  } catch(e){}
+  loadCBCCOptions();
+}
+function loadCBCCOptions() {
   const sel = document.getElementById("filter-canbo");
+  if (!sel) return;
   sel.innerHTML = '<option value="">-- Lọc theo CBCC --</option>';
   cbccList.forEach(n=>{
-    const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);
+    const opt = document.createElement("option");
+    opt.value = n; opt.textContent = n;
+    sel.appendChild(opt);
   });
 }
 
-/*** KHỞI TẠO ***/
+/* ====================== KHỞI TẠO ====================== */
 document.addEventListener("DOMContentLoaded", async ()=>{
   await loadCBCCFromSheetIfAny();
-  document.querySelectorAll("#tabs button").forEach(b=> b.addEventListener("click",()=>switchTab(b.dataset.tab)));
+
+  document.querySelectorAll("#tabs button").forEach(btn=>{
+    btn.addEventListener("click", ()=> switchTab(btn.dataset.tab));
+  });
   document.getElementById("btn-add").addEventListener("click", openCreate);
   document.getElementById("search").addEventListener("input", renderTable);
   document.getElementById("filter-canbo").addEventListener("change", renderTable);
   document.getElementById("filter-status").addEventListener("change", renderTable);
+
   switchTab(currentTab);
 });
 
-function switchTab(tab){
+function switchTab(tab) {
   currentTab = tab;
-  document.querySelectorAll("#tabs button").forEach(b=> b.classList.toggle("active", b.dataset.tab===tab));
+  document.querySelectorAll("#tabs button").forEach(b =>
+    b.classList.toggle("active", b.dataset.tab === tab)
+  );
   loadData();
 }
 
-/*** TẢI DỮ LIỆU ***/
+/* ====================== TẢI DỮ LIỆU ====================== */
 async function loadData(){
   const meta = SHEETS[currentTab];
   document.getElementById("table-head").innerHTML =
-    "<tr>"+meta.columns.map(c=>`<th>${c}</th>`).join("")+"<th>Thao tác</th></tr>";
+    "<tr>" + meta.columns.map(c=>`<th>${c}</th>`).join("") + "<th>Thao tác</th></tr>";
+
   document.getElementById("table-body").innerHTML = "";
   document.getElementById("error").textContent = "";
   document.getElementById("empty").textContent = "";
 
-  try{
+  try {
     const url = new URL(GAS_BASE_URL);
     url.searchParams.set("action","list");
     url.searchParams.set("sheet",meta.sheetName);
-    const r = await fetch(url);
-    const j = await r.json();
-    cache[currentTab] = Array.isArray(j.records)? j.records : [];
+    const res = await fetch(url);
+    const data = await res.json();
+    cache[currentTab] = Array.isArray(data.records) ? data.records : [];
     renderTable();
-  }catch(e){
-    document.getElementById("error").textContent = "Không tải được dữ liệu: "+(e.message||e);
+  } catch(e){
+    document.getElementById("error").textContent = "Không tải được dữ liệu: " + (e.message || e);
   }
 }
 
-/*** HIỂN THỊ ***/
+/* ====================== HIỂN THỊ BẢNG ====================== */
 function renderTable(){
   const meta = SHEETS[currentTab];
   const q = document.getElementById("search").value.trim().toLowerCase();
@@ -134,21 +149,26 @@ function renderTable(){
 
   const body = document.getElementById("table-body");
   body.innerHTML = "";
-  if (!rows.length){ document.getElementById("empty").textContent = "Chưa có dữ liệu."; return; }
+
+  if (!rows.length){
+    document.getElementById("empty").textContent = "Chưa có dữ liệu.";
+    return;
+  }
 
   rows.forEach(r=>{
     const tr = document.createElement("tr");
     meta.columns.forEach(col=>{
       let val = r[col] ?? "";
-      if (/Ngày|Hạn|Tháng/i.test(col)) val = fmtDate(val);
+      if (/Ngày|Hạn|Tháng/i.test(col)) val = formatDateForView(val);
       if (/Trạng thái/i.test(col)) val = formatStatus(val);
-      if (/(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col) && val){
-        val = `<a class="link" target="_blank" href="${val}">Mở liên kết</a>`;
+      if (/(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col)){
+        if (val) val = `<a class="link" target="_blank" href="${val}">Mở liên kết</a>`;
       }
-      tr.insertAdjacentHTML("beforeend", `<td>${val||""}</td>`);
+      tr.insertAdjacentHTML("beforeend",`<td>${val}</td>`);
     });
+
     const ops = document.createElement("td");
-    ops.innerHTML = `<button data-op="edit">Sửa</button> <button data-op="del">Xóa</button>`;
+    ops.innerHTML = `<button data-op="edit">Sửa</button><button data-op="del">Xóa</button>`;
     ops.querySelector('[data-op="edit"]').onclick = ()=>openEdit(r);
     ops.querySelector('[data-op="del"]').onclick = ()=>del(r);
     tr.appendChild(ops);
@@ -156,7 +176,7 @@ function renderTable(){
   });
 }
 
-/*** FORM ***/
+/* ====================== FORM THÊM/SỬA ====================== */
 function buildFields(record={}){
   const meta = SHEETS[currentTab];
   const fields = document.getElementById("form-fields");
@@ -167,61 +187,69 @@ function buildFields(record={}){
 
     const id = "fld-"+col.replace(/\s+/g,"_");
     const val = record[col] || "";
+
     const isDate = /(Ngày|Hạn|Tháng)/i.test(col);
     const isLong = /(Nội dung|Ghi chú|Công việc|Tiêu đề)/i.test(col);
     const isCanBo = ["Cán bộ","Phụ trách","Người giao","Người nhập"].includes(col);
     const isLink = /(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col);
 
-    let input = "";
-    if (isLong) input = `<textarea id="${id}" rows="3">${val}</textarea>`;
-    else if (isDate) input = `<input id="${id}" type="date" value="${formatForInput(val)}">`;
-    else if (isCanBo) {
-      input = `<select id="${id}">${["",...cbccList].map(v=>`<option ${v===val?"selected":""}>${v}</option>`).join("")}</select>`;
-    } else if (isLink){
+    let input;
+    if (isLong) {
+      input = `<textarea id="${id}" rows="3">${val}</textarea>`;
+    } else if (isDate) {
+      // input type="date" yêu cầu yyyy-MM-dd
+      let v = "";
+      if (val) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          v = d.toISOString().slice(0,10);
+        }
+      }
+      input = `<input id="${id}" type="date" value="${v}">`;
+    } else if (isCanBo) {
+      input = `<select id="${id}">
+        ${["",...cbccList].map(v=>`<option ${v===val?"selected":""}>${v}</option>`).join("")}
+      </select>`;
+    } else if (isLink) {
       input = `
-        <div>
-          <input type="url" id="${id}" value="${val}" placeholder="https://annatrandn135.github.io/BANGCONGVIEC-VHXH/files/ten-file.pdf">
-          <div class="file-tools">
-            <button type="button" class="gh" id="${id}_gh">Tải lên GitHub</button>
-            <button type="button" class="paste" id="${id}_paste">Dán link</button>
-          </div>
+        <div class="file-row">
+          <input type="url" id="${id}" value="${val}" placeholder="https://...">
+          <button type="button" class="btn-open-upload" data-target="${id}">Tải lên GitHub</button>
+          <button type="button" class="btn-paste-link" data-target="${id}">Dán link</button>
         </div>`;
-    } else input = `<input id="${id}" type="text" value="${val}">`;
+    } else {
+      input = `<input id="${id}" type="text" value="${val}">`;
+    }
 
-    fields.insertAdjacentHTML("beforeend", `
+    fields.insertAdjacentHTML("beforeend",`
       <div class="row">
         <label>${col}</label>
         ${input}
       </div>
     `);
-
-    if (isLink){
-      document.getElementById(`${id}_gh`).onclick = ()=>{
-        window.open(GITHUB_UPLOAD_URL, "_blank", "noopener");
-        alert("Đã mở trang Upload GitHub. Sau khi tải xong, bấm nút Copy path (hoặc Sao chép link), quay lại bấm 'Dán link'.\nMẹo: Link hợp lệ bắt đầu bằng:\n"+GH_PAGES_BASE);
-      };
-      document.getElementById(`${id}_paste`).onclick = async ()=>{
-        try{
-          const t = await navigator.clipboard.readText();
-          if (t && /^https?:\/\//i.test(t)) {
-            document.getElementById(id).value = t;
-          } else {
-            alert("Clipboard không có URL hợp lệ. Hãy dán thủ công (Ctrl+V).");
-          }
-        }catch(_){
-          alert("Trình duyệt không cho truy cập clipboard. Hãy dán thủ công (Ctrl+V).");
-        }
-      };
-    }
   });
-}
 
-function formatForInput(v){
-  if (!v) return "";
-  const d = new Date(v); if (isNaN(d)) return "";
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const da = String(d.getDate()).padStart(2,"0");
-  return `${d.getFullYear()}-${m}-${da}`;
+  // Gắn sự kiện cho nút “Tải lên GitHub / Dán link”
+  fields.querySelectorAll(".btn-open-upload").forEach(btn=>{
+    btn.onclick = ()=>{
+      const tgt = btn.dataset.target;
+      const hint = window.open("./files/", "_blank"); // trang hướng dẫn upload trong repo
+      alert("Đã mở trang Upload. Tải tệp xong, copy đường dẫn tệp trong /files rồi quay lại bấm 'Dán link'.");
+    };
+  });
+  fields.querySelectorAll(".btn-paste-link").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const tgtId = btn.dataset.target;
+      try{
+        const txt = await navigator.clipboard.readText();
+        const ok = /^https?:\/\//i.test(txt);
+        if (!ok) { alert("Clipboard không có URL hợp lệ. Vui lòng dán thủ công (Ctrl+V)."); return; }
+        document.getElementById(tgtId).value = txt.trim();
+      }catch(e){
+        alert("Không đọc được clipboard. Dán thủ công (Ctrl+V) giúp nhé.");
+      }
+    };
+  });
 }
 
 function openCreate(){
@@ -241,32 +269,48 @@ function openEdit(rec){
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
 
+/* ======== GỬI CRUD BẰNG FORMDATA (TRÁNH PREFLIGHT/CORS) ======== */
+async function postForm(action, sheet, dataObj, id){
+  const fd = new FormData();
+  fd.append("action", action);
+  fd.append("sheet", sheet);
+  if (id != null) fd.append("id", String(id));
+  fd.append("data", JSON.stringify(dataObj)); // server parse JSON trong trường 'data'
+
+  const res = await fetch(GAS_BASE_URL, { method:"POST", body: fd }); // KHÔNG đặt headers
+  // Nếu Apps Script trả về text, cố gắng parse
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch(e) { json = { success:false, message:text }; }
+  return json;
+}
+
 async function saveCreate(){ await saveRecord("create"); }
-async function saveUpdate(id){ await saveRecord("update", id); }
+async function saveUpdate(id){ await saveRecord("update",id); }
 
-async function saveRecord(action, id=null){
+async function saveRecord(action,id=null){
   const meta = SHEETS[currentTab];
-  const payload = { action, sheet: meta.sheetName, data:{} };
-  if (id) payload.id = id;
-
+  const payload = {};
   meta.columns.forEach(col=>{
     if (col==="ID"||col==="Cập nhật"||col==="Ngày cập nhật") return;
     const el = document.getElementById("fld-"+col.replace(/\s+/g,"_"));
-    if (el) payload.data[col] = el.value || "";
+    if (!el) return;
+    let v = el.value || "";
+    // chuẩn hoá yyyy-MM-dd -> Date ISO string để backend nhận
+    if (/(Ngày|Hạn|Tháng)/i.test(col) && v) {
+      // el.value đã ở dạng yyyy-MM-dd
+      try { v = new Date(v).toISOString(); } catch(e){}
+    }
+    payload[col] = v;
   });
 
   try{
-    const r = await fetch(GAS_BASE_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    const j = await r.json();
-    if (!j.success) { alert("Lỗi: "+(j.message||"Không xác định")); return; }
+    const resp = await postForm(action, meta.sheetName, payload, id);
+    if (!resp.success && !resp.id) throw new Error(resp.message || "Không lưu được");
     document.getElementById("dlg").close();
     loadData();
   }catch(e){
-    alert("Lỗi: "+(e.message||e));
+    alert("Lỗi: " + (e.message || e));
   }
 }
 
@@ -274,15 +318,10 @@ async function del(rec){
   if (!confirm("Xóa bản ghi này?")) return;
   const meta = SHEETS[currentTab];
   try{
-    const r = await fetch(GAS_BASE_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ action:"delete", sheet: meta.sheetName, id: rec.ID })
-    });
-    const j = await r.json();
-    if (!j.success) { alert("Lỗi: "+(j.message||"Không xác định")); return; }
+    const resp = await postForm("delete", meta.sheetName, {}, rec.ID);
+    if (!resp.success) throw new Error(resp.message || "Xoá thất bại");
     loadData();
   }catch(e){
-    alert("Lỗi: "+(e.message||e));
+    alert("Lỗi: " + (e.message || e));
   }
 }
