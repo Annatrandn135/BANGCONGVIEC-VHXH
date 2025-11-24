@@ -1,15 +1,17 @@
 /**
  * FRONTEND – Bảng công việc phòng VH-XH
- * Đọc/ghi qua GAS_BASE_URL (/exec). Upload file: mở trang Upload GAS ở tab mới, copy link dán về.
+ * Cần khai báo:
+ *  - GAS_BASE_URL   : Web App /exec phục vụ LIST/CREATE/UPDATE/DELETE
+ *  - GAS_UPLOAD_URL : Web App /exec hiển thị form Upload (mở TAB MỚI)
+ *
+ * Gợi ý: bạn đang dùng URL:
+ * https://script.google.com/macros/s/AKfycb.../exec
+ * -> Dán đúng vào 2 biến dưới đây.
  */
+const GAS_BASE_URL   = "https://script.google.com/macros/s/AKfycbw1nSaUIyVOijZMWr-8-Jhgw32s-D7ps87g5cOASmcc_tkt1QZrlV7942AwLXt7Knr4/exec";
+const GAS_UPLOAD_URL = "https://script.google.com/macros/s/AKfycbymXO6kOFiVhgmjWxS3AxmmkPxYIfnybrkfQXscr1UV-AWbCO8Q_FFglwQsQpENMbyw/exec";
 
-/* 1) URL Web App /exec để CRUD (thay nếu bạn có URL khác) */
-const GAS_BASE_URL = "https://script.google.com/macros/s/AKfycbzHeDlLSVw3cBwyy1-FicxbMeOSk1CUMNFO7TenF3BDMer2tkMbkHJ5dfemKVkXznUl/exec";
-
-/* 2) URL trang Upload (/exec) – TRIỂN KHAI THEO HƯỚNG DẪN, rồi DÁN URL VÀO ĐÂY */
-const UPLOAD_EXEC_URL = "https://script.google.com/macros/s/AKfycbymXO6kOFiVhgmjWxS3AxmmkPxYIfnybrkfQXscr1UV-AWbCO8Q_FFglwQsQpENMbyw/exec"; // ví dụ: https://script.google.com/macros/s/AKfycb.../exec
-
-/* ============ CẤU HÌNH CÁC SHEET ============ */
+/* ====================== CẤU HÌNH SHEET ====================== */
 const SHEETS = {
   lich_ubnd: {
     title: "Lịch công tác UBND phường",
@@ -38,66 +40,62 @@ const SHEETS = {
   }
 };
 
-/* ============ TIỆN ÍCH ============ */
-function formatStatus(val) {
-  if (!val) return "";
-  const v = String(val).toLowerCase();
+/* ====================== TIỆN ÍCH ====================== */
+function pad2(n){ return String(n).padStart(2,'0'); }
+/** chuyển mọi chuỗi ngày -> yyyy-MM-dd cho input[type=date] */
+function toDateInputValue(val){
+  if(!val) return "";
+  const d = new Date(val);
+  if (isNaN(d)) return "";
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+function formatDateForView(val){
+  if(!val) return "";
+  const d = new Date(val);
+  if (isNaN(d)) return String(val);
+  return d.toLocaleDateString('vi-VN');
+}
+function formatStatus(val){
+  if(!val) return "";
+  const v = (""+val).toLowerCase();
   if (v.includes("hoàn")) return '<span class="badge status-Hoan">Hoàn thành</span>';
-  if (v.includes("đang")) return '<span class="badge status-Dang">Đang thực hiện</span>';
-  if (v.includes("quá"))  return '<span class="badge status-Qua">Quá hạn</span>';
+  if (v.includes("đang"))  return '<span class="badge status-Dang">Đang thực hiện</span>';
+  if (v.includes("quá"))   return '<span class="badge status-Qua">Quá hạn</span>';
   return '<span class="badge status-Cho">Chưa thực hiện</span>';
 }
-function formatDateForView(val) {
-  if (!val) return "";
-  const d = new Date(val);
-  if (isNaN(d.getTime())) return String(val);
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
-}
 
-/* ============ STATE ============ */
+/* ====================== STATE ====================== */
 let currentTab = "lich_ubnd";
 let cache = {};
 let cbccList = [
   "Tú Anh","Nguyệt","Nhiên","Loan","L. Uyên","Hùng","Đào","Thúy","Ly","Hiền","Lưu",
-  "Thảo","Giang","Huy","Cường","Phong","Duy","Thân","Dung","T. Uyên","Văn","Trí",
-  "Phúc","Hân","Nguyên","Thành"
+  "Thảo","Giang","Huy","Cường","Phong","Duy","Thân","Dung","T. Uyên","Văn","Trí","Phúc","Hân","Nguyên","Thành"
 ];
 
-/* ============ NẠP DM CBCC (nếu có) ============ */
-async function loadCBCCFromSheetIfAny() {
-  try {
-    const url = new URL(GAS_BASE_URL);
-    url.searchParams.set("action","list");
-    url.searchParams.set("sheet","DM_CBCC");
-    const res = await fetch(url);
+/* ====================== LẤY DM CBCC (nếu có) ====================== */
+async function loadCBCCFromSheetIfAny(){
+  try{
+    const u = new URL(GAS_BASE_URL);
+    u.searchParams.set("action","list");
+    u.searchParams.set("sheet","DM_CBCC");
+    const res = await fetch(u);
     const data = await res.json();
-    if (data.records?.length) {
-      const firstCol = Object.keys(data.records[0])[0];
-      cbccList = data.records.map(r => r[firstCol]).filter(Boolean);
+    if (data.records?.length){
+      const first = Object.keys(data.records[0])[0];
+      cbccList = data.records.map(r=>r[first]).filter(Boolean);
     }
-  } catch(e) {}
-  loadCBCCOptions();
-}
-function loadCBCCOptions() {
+  }catch(e){}
   const sel = document.getElementById("filter-canbo");
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Lọc theo CBCC --</option>';
-  cbccList.forEach(n=>{
-    const opt = document.createElement("option");
-    opt.value = n; opt.textContent = n;
-    sel.appendChild(opt);
-  });
+  sel.innerHTML = '<option value="">-- Lọc theo CBCC --</option>' +
+    cbccList.map(n=>`<option>${n}</option>`).join('');
 }
 
-/* ============ KHỞI TẠO ============ */
-document.addEventListener("DOMContentLoaded", async ()=>{
+/* ====================== INIT ====================== */
+document.addEventListener("DOMContentLoaded", async () => {
   await loadCBCCFromSheetIfAny();
 
-  document.querySelectorAll("#tabs button").forEach(btn=>{
-    btn.addEventListener("click", ()=> switchTab(btn.dataset.tab));
+  document.querySelectorAll("#tabs .tab").forEach(b=>{
+    b.addEventListener("click", ()=>switchTab(b.dataset.tab));
   });
 
   document.getElementById("btn-add").addEventListener("click", openCreate);
@@ -105,62 +103,71 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   document.getElementById("filter-canbo").addEventListener("change", renderTable);
   document.getElementById("filter-status").addEventListener("change", renderTable);
 
+  // Lắng nghe postMessage từ trang Upload (khác origin)
+  window.addEventListener("message", ev=>{
+    try{
+      const msg = ev.data || {};
+      if (msg.type === "uploaded" && msg.url){
+        // tìm ô URL đang focus (nếu có)
+        const box = document.querySelector('.form-fields input[data-accept-link="1"]');
+        if (box) {
+          box.value = msg.url;
+          alert("Đã nhận link từ trang Upload.");
+        }
+      }
+    }catch(_){}
+  });
+
   switchTab(currentTab);
 });
 
-function switchTab(tab) {
+function switchTab(tab){
   currentTab = tab;
-  document.querySelectorAll("#tabs button").forEach(b =>
-    b.classList.toggle("active", b.dataset.tab === tab)
-  );
+  document.querySelectorAll("#tabs .tab").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
   loadData();
 }
 
-/* ============ TẢI DỮ LIỆU ============ */
+/* ====================== LOAD DATA ====================== */
 async function loadData(){
   const meta = SHEETS[currentTab];
-
-  document.getElementById("table-head").innerHTML =
-    "<tr>" + meta.columns.map(c=>`<th>${c}</th>`).join("") + "<th>Thao tác</th></tr>";
-
-  document.getElementById("table-body").innerHTML = "";
   document.getElementById("error").textContent = "";
   document.getElementById("empty").textContent = "";
 
-  try {
-    const url = new URL(GAS_BASE_URL);
-    url.searchParams.set("action","list");
-    url.searchParams.set("sheet",meta.sheetName);
+  // header
+  document.getElementById("table-head").innerHTML =
+    "<tr>" + meta.columns.map(c=>`<th>${c}</th>`).join("") + "<th>Thao tác</th></tr>";
+  document.getElementById("table-body").innerHTML = "";
 
-    const res = await fetch(url);
+  try{
+    const u = new URL(GAS_BASE_URL);
+    u.searchParams.set("action","list");
+    u.searchParams.set("sheet", meta.sheetName);
+    const res = await fetch(u);
     const data = await res.json();
     cache[currentTab] = Array.isArray(data.records) ? data.records : [];
     renderTable();
-
-  } catch(e){
-    document.getElementById("error").textContent =
-      "Không tải được dữ liệu: " + (e.message || e);
+  }catch(e){
+    document.getElementById("error").textContent = "Không tải được dữ liệu: " + (e.message || e);
   }
 }
 
-/* ============ HIỂN THỊ BẢNG ============ */
+/* ====================== RENDER ====================== */
 function renderTable(){
   const meta = SHEETS[currentTab];
-  const q = document.getElementById("search").value.trim().toLowerCase();
-  const canbo = document.getElementById("filter-canbo").value;
+  const q  = document.getElementById("search").value.trim().toLowerCase();
+  const cb = document.getElementById("filter-canbo").value;
   const st = document.getElementById("filter-status").value;
 
   let rows = (cache[currentTab]||[]).filter(r=>{
     const text = Object.values(r).join(" ").toLowerCase();
     const okQ = !q || text.includes(q);
-    const okCB = !canbo || r["Cán bộ"]===canbo || r["Phụ trách"]===canbo;
-    const okT = !st || r["Trạng thái"]===st;
-    return okQ && okCB && okT;
+    const okCB = !cb || r["Cán bộ"]===cb || r["Phụ trách"]===cb;
+    const okS = !st || r["Trạng thái"]===st;
+    return okQ && okCB && okS;
   });
 
   const body = document.getElementById("table-body");
   body.innerHTML = "";
-
   if (!rows.length){
     document.getElementById("empty").textContent = "Chưa có dữ liệu.";
     return;
@@ -171,30 +178,28 @@ function renderTable(){
     meta.columns.forEach(col=>{
       let val = r[col] ?? "";
       if (/Ngày|Hạn|Tháng/i.test(col)) val = formatDateForView(val);
-      if (/Trạng thái/i.test(col)) val = formatStatus(val);
+      if (/Trạng thái/i.test(col))     val = formatStatus(val);
       if (/(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col)){
-        if (val) val = `<a class="link" target="_blank" href="${val}">Mở liên kết</a>`;
+        if (val) val = `<a class="link" href="${val}" target="_blank">Mở liên kết</a>`;
       }
-      tr.insertAdjacentHTML("beforeend",`<td>${val}</td>`);
+      tr.insertAdjacentHTML("beforeend", `<td>${val}</td>`);
     });
 
     const ops = document.createElement("td");
-    ops.innerHTML = `
-      <button class="btn" data-op="edit">Sửa</button>
-      <button class="btn" data-op="del">Xóa</button>
-    `;
+    ops.innerHTML = `<button class="btn btn-light" data-op="edit">Sửa</button>
+                     <button class="btn btn-light" data-op="del">Xóa</button>`;
     ops.querySelector('[data-op="edit"]').onclick = ()=>openEdit(r);
-    ops.querySelector('[data-op="del"]').onclick = ()=>del(r);
+    ops.querySelector('[data-op="del"]').onclick  = ()=>del(r);
     tr.appendChild(ops);
     body.appendChild(tr);
   });
 }
 
-/* ============ FORM THÊM/SỬA ============ */
+/* ====================== FORM ====================== */
 function buildFields(record={}){
   const meta = SHEETS[currentTab];
-  const fields = document.getElementById("form-fields");
-  fields.innerHTML = "";
+  const wrap = document.getElementById("form-fields");
+  wrap.innerHTML = "";
 
   meta.columns.forEach(col=>{
     if (col==="ID" || col==="Cập nhật" || col==="Ngày cập nhật") return;
@@ -207,68 +212,53 @@ function buildFields(record={}){
     const isCanBo = ["Cán bộ","Phụ trách","Người giao","Người nhập"].includes(col);
     const isLink = /(Liên kết|Đính kèm|Nguồn|Kết quả|Báo cáo|\(link\))/i.test(col);
 
-    let input;
+    let inputHTML = "";
 
     if (isLong){
-      input = `<textarea id="${id}" rows="3">${val}</textarea>`;
-    }
-    else if (isDate){
-      let dateValue = "";
-      if (val) {
-        const d = new Date(val);
-        if (!isNaN(d.getTime())){
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth()+1).padStart(2,"0");
-          const dd = String(d.getDate()).padStart(2,"0");
-          dateValue = `${yyyy}-${mm}-${dd}`;
-        }
-      }
-      input = `<input id="${id}" type="date" value="${dateValue}">`;
-    }
-    else if (isCanBo){
-      input = `<select id="${id}">
+      inputHTML = `<textarea id="${id}">${val}</textarea>`;
+    } else if (isDate){
+      inputHTML = `<input id="${id}" type="date" value="${toDateInputValue(val)}">`;
+    } else if (isCanBo){
+      inputHTML = `<select id="${id}">
         ${["",...cbccList].map(v=>`<option ${v===val?"selected":""}>${v}</option>`).join("")}
       </select>`;
-    }
-    else if (isLink){
-      // Cơ chế mở trang Upload ở tab mới, sau đó dán link về ô URL
-      input = `
+    } else if (isLink){
+      inputHTML = `
         <div class="file-row">
-          <input type="url" id="${id}" value="${val}" placeholder="https://..." style="flex:1">
-          <button type="button" id="${id}_open" class="btn">Tải file</button>
-          <button type="button" id="${id}_paste" class="btn">Dán link</button>
+          <input id="${id}" type="url" value="${val}" placeholder="https://..." data-accept-link="1">
+          <button type="button" class="btn btn-light" id="${id}_open">Tải file</button>
+          <button type="button" class="btn btn-primary" id="${id}_paste">Dán link</button>
         </div>`;
-    }
-    else {
-      input = `<input id="${id}" type="text" value="${val}">`;
+    } else {
+      inputHTML = `<input id="${id}" type="text" value="${val}">`;
     }
 
-    fields.insertAdjacentHTML("beforeend",`
-      <label>${col}</label>
-      ${input}
+    wrap.insertAdjacentHTML("beforeend", `
+      <div class="row">
+        <label>${col}</label>
+        ${inputHTML}
+      </div>
     `);
 
     if (isLink){
-      const openBtn = document.getElementById(`${id}_open`);
+      const openBtn  = document.getElementById(`${id}_open`);
       const pasteBtn = document.getElementById(`${id}_paste`);
-      const urlBox  = document.getElementById(id);
+      const urlBox   = document.getElementById(id);
 
+      // Mở trang Upload ở TAB MỚI
       openBtn.onclick = ()=>{
-        if (!UPLOAD_EXEC_URL || !/^https?:\/\//i.test(UPLOAD_EXEC_URL)) {
-          alert("Chưa cấu hình URL trang Upload (/exec). Hãy thay UPLOAD_EXEC_URL trong app.js.");
-          return;
-        }
-        window.open(UPLOAD_EXEC_URL, "_blank", "noopener");
-        alert('Đã mở trang Upload. Tải tệp xong, bấm "Copy link", quay lại đây và bấm "Dán link".');
+        alert('Đã mở trang Upload. Tải tệp xong, bấm "Copy link" ở trang Upload rồi quay lại bấm "Dán link".');
+        window.open(GAS_UPLOAD_URL, "_blank", "noopener");
       };
 
+      // Dán từ clipboard (yêu cầu user gesture)
       pasteBtn.onclick = async ()=>{
-        try {
+        try{
           const t = await navigator.clipboard.readText();
-          if (t && /^https?:\/\//i.test(t)) urlBox.value = t.trim();
-          else alert("Clipboard không có URL hợp lệ. Dán thủ công bằng Ctrl+V.");
-        } catch {
-          alert("Trình duyệt không cho đọc clipboard. Dán thủ công bằng Ctrl+V.");
+          try{ new URL(t); }catch{ throw new Error("Clipboard không có URL hợp lệ. Dán thủ công bằng Ctrl+V."); }
+          urlBox.value = t;
+        }catch(err){
+          alert(err.message || "Không đọc được clipboard. Vui lòng Ctrl+V vào ô URL.");
         }
       };
     }
@@ -292,50 +282,49 @@ function openEdit(rec){
   document.getElementById("dlg-cancel").onclick = ()=>dlg.close();
 }
 
-/* ============ LƯU/XÓA ============ */
 async function saveCreate(){ await saveRecord("create"); }
-async function saveUpdate(id){ await saveRecord("update",id); }
+async function saveUpdate(id){ await saveRecord("update", id); }
 
-async function saveRecord(action,id=null){
+async function saveRecord(action, id=null){
   const meta = SHEETS[currentTab];
-  const payload = { action, sheet:meta.sheetName, data:{} };
+  const payload = { action, sheet: meta.sheetName, data:{} };
   if (id) payload.id = id;
 
   meta.columns.forEach(col=>{
-    if (col==="ID"||col==="Cập nhật"||col==="Ngày cập nhật") return;
+    if (col==="ID" || col==="Cập nhật" || col==="Ngày cập nhật") return;
     const el = document.getElementById("fld-"+col.replace(/\s+/g,"_"));
     if (el) payload.data[col] = el.value || "";
   });
 
-  const res = await fetch(GAS_BASE_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify(payload)
-  });
-
-  const data = await res.json();
-  if (!data.success){
-    alert("Lỗi: "+data.message);
-    return;
+  try{
+    const res = await fetch(GAS_BASE_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || "Lỗi lưu dữ liệu");
+    document.getElementById("dlg").close();
+    loadData();
+  }catch(e){
+    alert("Lỗi: " + (e.message || e));
   }
-  document.getElementById("dlg").close();
-  loadData();
 }
 
 async function del(rec){
   if (!confirm("Xóa bản ghi này?")) return;
-
   const meta = SHEETS[currentTab];
-  const res = await fetch(GAS_BASE_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({ action:"delete", sheet:meta.sheetName, id:rec.ID })
-  });
-
-  const data = await res.json();
-  if (!data.success){
-    alert("Lỗi: "+data.message);
-    return;
+  try{
+    const res = await fetch(GAS_BASE_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ action:"delete", sheet:meta.sheetName, id:rec.ID })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || "Xóa không thành công");
+    loadData();
+  }catch(e){
+    alert("Lỗi: " + (e.message || e));
   }
-  loadData();
 }
+
