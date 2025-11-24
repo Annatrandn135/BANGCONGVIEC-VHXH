@@ -3,16 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bảng công việc phòng VH-XH</title>
+  <title>BẢNG CÔNG VIỆC PHÒNG VH-XH</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 <header>
-  <h1>📘 BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
-
+  <h1><span class="logo">📘</span> BẢNG CÔNG VIỆC PHÒNG VH-XH</h1>
   <nav id="tabs">
-    <button data-tab="lich_ubnd">1. Lịch công tác UBND phường</button>
+    <button data-tab="lich_ubnd" class="active">1. Lịch công tác UBND phường</button>
     <button data-tab="lich_vhxh">2. Lịch công tác phòng VH-XH</button>
     <button data-tab="trong_tam_thang">3. Nhiệm vụ trọng tâm tháng</button>
     <button data-tab="nhiem_vu_cbcc">4. Nhiệm vụ từng CBCC</button>
@@ -22,8 +20,8 @@
 
 <main>
   <section class="toolbar">
-    <button id="btn-add">Thêm mới</button>
-    <input id="search" placeholder="Tìm kiếm...">
+    <button id="btn-add" class="btn-primary">Thêm mới</button>
+    <input id="search" type="search" placeholder="Tìm kiếm...">
     <select id="filter-canbo"><option value="">-- Lọc theo CBCC --</option></select>
     <select id="filter-status">
       <option value="">-- Trạng thái --</option>
@@ -34,27 +32,36 @@
     </select>
   </section>
 
-  <table id="tbl">
-    <thead id="table-head"></thead>
-    <tbody id="table-body"></tbody>
-  </table>
+  <div id="error" class="error"></div>
+  <div class="table-wrap">
+    <table id="tbl">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="empty" class="empty"></div>
+  </div>
 
-  <div id="empty"></div>
-  <div id="error"></div>
+  <p class="footnote">Triển khai nội bộ: Google Sheets + Apps Script + GitHub Pages</p>
 </main>
 
 <!-- Dialog -->
 <dialog id="dlg">
-  <h3 id="dlg-title"></h3>
-  <div id="form-fields"></div>
-
-  <div class="dlg-buttons">
-    <button id="dlg-cancel">Hủy</button>
-    <button id="dlg-save" class="primary">Lưu</button>
-  </div>
+  <form method="dialog" class="dialog-body" id="dlg-form">
+    <div class="dialog-title" id="dlg-title">Thêm mới</div>
+    <div id="form-fields"></div>
+    <div class="hint">
+      <b>Lưu ý upload:</b> Nút <i>Tải lên GitHub</i> sẽ mở trang upload repo
+      <code>/files</code>. Sau khi tải xong, copy đường dẫn dạng
+      <code>https://annatrandn135.github.io/BANGCONGVIEC-VHXH/files/&lt;tên-file&gt;</code>,
+      quay lại bấm <i>Dán link</i> (hoặc dán thủ công).
+    </div>
+    <div class="dialog-actions">
+      <button type="button" id="dlg-cancel">Hủy</button>
+      <button type="button" id="dlg-save" class="btn-primary">Lưu</button>
+    </div>
+  </form>
 </dialog>
 
 <script src="app.js"></script>
 </body>
 </html>
-
