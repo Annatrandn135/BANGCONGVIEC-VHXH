@@ -3,7 +3,7 @@
  * LƯU Ý: Nhớ thay GAS_BASE_URL = Web App URL (đuôi /exec)
  */
 const GAS_BASE_URL =
-  "https://script.google.com/macros/s/AKfycbxbyYMbbqK2bKxVRPa0M1HTsrW_GYRzD3HtXPiW7G3z8ze9cSMQLtgQddhADf0UuqtJ/exec";
+  "https://script.google.com/macros/s/AKfycbyBNm3HbgZKabYWPFRcqTWvwMIstMR_GYr8JD1Bac73Ffjfr4kRGopsBcDJRJ_juNB3/exec";
 
 /* ====================== CẤU HÌNH SHEET ====================== */
 const SHEETS = {
@@ -320,3 +320,4 @@ async function delRecord(rec) {
 
   loadData();
 }
+
