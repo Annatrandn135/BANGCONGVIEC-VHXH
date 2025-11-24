@@ -107,28 +107,21 @@ function switchTab(tab){
 }
 
 /* ====================== TẢI DỮ LIỆU ====================== */
-async function loadData(){
-  const meta = SHEETS[currentTab];
-  document.getElementById("table-head").innerHTML =
-    "<tr>"+meta.columns.map(c=>`<th>${c}</th>`).join("")+"<th>Thao tác</th></tr>";
-  document.getElementById("table-body").innerHTML = "";
-  const $error = document.getElementById("error");
-  $error.hidden = true; $error.textContent = "";
-  document.getElementById("empty").textContent = "";
+async function uploadFileViaGAS(file) {
+  const fd = new FormData();
+  fd.append("action", "upload");   // BẮT BUỘC PHẢI CÓ
+  fd.append("file", file, file.name);
 
-  try{
-    const url = new URL(GAS_BASE_URL);
-    url.searchParams.set("action","list");
-    url.searchParams.set("sheet", meta.sheetName);
-    const res = await fetch(url);
-    const data = await res.json();
-    cache[currentTab] = Array.isArray(data.records)?data.records:[];
-    renderTable();
-  }catch(e){
-    $error.textContent = "Không tải được dữ liệu: "+(e.message||e);
-    $error.hidden = false;
-  }
+  const res = await fetch(GAS_BASE_URL + "?action=upload", {
+    method: "POST",
+    body: fd
+  });
+
+  const data = await res.json();
+  if (!data.success) throw new Error(data.message);
+  return data.url;
 }
+
 
 /* ====================== HIỂN THỊ ====================== */
 function renderTable(){
@@ -304,4 +297,5 @@ async function del(rec){
     loadData();
   }catch(e){ alert("Lỗi mạng: "+e.message); }
 }
+
 
